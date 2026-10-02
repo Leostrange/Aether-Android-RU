@@ -423,14 +423,14 @@ function settingsDefinition(): {
 } {
 	return {
 		id: SETTINGS_PAGE_ID,
-		title: "Subagents",
-		subtitle: "Subagent concurrency, dispatch, persistence, and Aether UI",
+		title: "Субагенты",
+		subtitle: "Параллелизм, распределение задач, сохранение данных и интерфейс Aether для субагентов",
 		icon: "auto",
 		order: 30,
 		sections: [
 			{
 				id: "runtime",
-				title: "Runtime",
+				title: "Среда выполнения",
 				settings: [
 					{ id: "maxConcurrent", label: "Max concurrency", description: "Maximum concurrent background agents. Queued agents start as slots free.", type: "number", min: 1, max: MAX_CONCURRENT_CEILING },
 					{ id: "defaultMaxTurns", label: "Default max turns", description: "Default maximum agentic turns before wrap-up. 0 means unlimited.", type: "number", min: 0, max: MAX_TURNS_CEILING },
@@ -443,7 +443,7 @@ function settingsDefinition(): {
 			},
 			{
 				id: "agents",
-				title: "Agents",
+				title: "Агенты",
 				settings: [
 					{ id: "disableDefaultAgents", label: "Disable defaults", description: "Hide built-in general-purpose, Explore, and Plan agents. Custom agents are unaffected.", type: "toggle" },
 					{ id: "fallbackSubagent", label: "Fallback agent", description: "Agent used when subagent_type is unknown, disabled, or ambiguous. none rejects the call instead.", type: "text", placeholder: "general-purpose", default: "general-purpose" },
@@ -453,14 +453,14 @@ function settingsDefinition(): {
 			},
 			{
 				id: "models",
-				title: "Models",
+				title: "Модели",
 				settings: [
 					{ id: "scopeModels", label: "Scope models", description: "Validate subagent model choices against Pi scoped models (/scoped-models).", type: "toggle" },
 				],
 			},
 			{
 				id: "ui",
-				title: "Aether and Pi UI",
+				title: "Интерфейс Aether и Pi",
 				settings: [
 					{ id: "widgetMode", label: "Widget", description: "Live Aether agent card visibility above the composer.", type: "select", options: widgetModeOptions() },
 					{ id: "fleetView", label: "Fleet view", description: "Keep the TUI FleetView enabled for Pi CLI; Aether renders the same roster as tappable cards.", type: "toggle" },
@@ -696,9 +696,9 @@ function fallbackActivityCard(api: AetherExtensionAPI, context: AetherRenderCont
 
 function messageTypes(api: AetherExtensionAPI): AetherMessageTypeDefinition[] {
 	return [
-		{ type: "subagent-notification", title: "Subagent complete", icon: "auto", render: ({ message }) => notificationCard(api, message) },
-		{ type: "subagent-result", title: "Subagent result", icon: "info", render: ({ message }) => resultCard(api, message) },
-		{ type: "subagent-conversation", title: "Subagent conversation", icon: "terminal", render: ({ message }) => conversationCard(api, message) },
+		{ type: "subagent-notification", title: "Субагент завершил работу", icon: "auto", render: ({ message }) => notificationCard(api, message) },
+		{ type: "subagent-result", title: "Результат субагента", icon: "info", render: ({ message }) => resultCard(api, message) },
+		{ type: "subagent-conversation", title: "Диалог с субагентом", icon: "terminal", render: ({ message }) => conversationCard(api, message) },
 	];
 }
 
@@ -844,21 +844,21 @@ export const activateAether = async (api: AetherExtensionAPI) => {
 		const typeSections: AetherSettingsSection[] = typeSettings.length > 0
 			? [{
 				id: "types",
-				title: "Agent types",
-				description: "Enable or disable individual agent types. Disabled built-ins get a project stub; disabled custom agents keep their file.",
+				title: "Типы агентов",
+				description: "Включайте и отключайте отдельные типы агентов. Для отключённых встроенных агентов создаётся заглушка проекта.",
 				settings: typeSettings,
 			}]
 			: [];
 		const definition = {
 			id: AGENTS_PAGE_ID,
-			title: "Subagent Types",
-			subtitle: "Enable, disable, and reload custom agent definitions",
+			title: "Типы субагентов",
+			subtitle: "Включение, отключение и перезагрузка пользовательских определений агентов",
 			icon: "auto",
 			order: 31,
 			sections: [
 				{
 					id: "manage",
-					title: "Manage",
+					title: "Управление",
 					settings: [
 						{ id: "create", label: "Create agent definition", description: "Add a prompt to the composer asking the main model to create .pi/agents/<name>.md.", type: "button" as const, action: "agent-create", tone: "primary" as const, icon: "add" },
 						{ id: "reload", label: "Reload agent files", description: "Re-read project, workspace, and personal agent definitions now.", type: "button" as const, action: "agent-reload", tone: "neutral" as const, icon: "refresh" },
@@ -920,8 +920,8 @@ export const activateAether = async (api: AetherExtensionAPI) => {
 
 	api.registerComposerMenuItem({
 		id: "subagents",
-		title: "Subagents",
-		subtitle: "Draft a subagent creation request",
+		title: "Субагенты",
+		subtitle: "Создать запрос на добавление субагента",
 		icon: "auto",
 		order: 20,
 		action: "agent-create",

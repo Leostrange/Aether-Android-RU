@@ -133,8 +133,8 @@ function parseProviderRoute(value: SettingValue): string[] {
 const webSearchEnabledBinding: ConfigBinding = {
 	setting: {
 		id: "webSearchEnabled",
-		label: "Web search tools",
-		description: "Register search and source-check tools after the next extension reload.",
+		label: "Инструменты веб-поиска",
+		description: "Зарегистрировать инструменты поиска и проверки источников после следующей перезагрузки расширений.",
 		type: "toggle",
 	},
 	path: ["webSearch", "enabled"],
@@ -144,8 +144,8 @@ const webSearchEnabledBinding: ConfigBinding = {
 const providerBinding: ConfigBinding = {
 	setting: {
 		id: "provider",
-		label: "Default search provider",
-		description: "Used whenever a tool call leaves provider on Auto.",
+		label: "Провайдер поиска по умолчанию",
+		description: "Используется, если для вызова инструмента выбран режим «Авто».",
 		type: "select",
 		options: providerOptions,
 	},
@@ -159,7 +159,7 @@ const advancedCoreBindings: ConfigBinding[] = [
 		setting: {
 			id: "searchRoutingProviders",
 			label: "Sequential fallback route",
-			description: "Comma-separated providers in priority order. Saving a route clears the single-provider override and uses transient, quota, and network fallbacks by default.",
+			description: "Провайдеры через запятую в порядке приоритета. Сохранение маршрута отключает одиночного провайдера и включает резервные варианты по сбоям, квотам и сети.",
 			type: "text",
 			placeholder: "openai, brave, exa",
 		},
@@ -187,7 +187,7 @@ const advancedCoreBindings: ConfigBinding[] = [
 		setting: {
 			id: "workflow",
 			label: "Result workflow",
-			description: "Review a draft, return an automatic summary, or return raw results.",
+			description: "Проверять черновик, возвращать автоматическую сводку или исходные результаты.",
 			type: "select",
 			options: [
 				{ value: "summary-review", label: "Summary review" },
@@ -202,7 +202,7 @@ const advancedCoreBindings: ConfigBinding[] = [
 		setting: {
 			id: "curatorTimeoutSeconds",
 			label: "Curator idle timeout",
-			description: "Seconds before an idle review is submitted automatically.",
+			description: "Сколько секунд ждать перед автоматической отправкой проверки.",
 			type: "number",
 			min: 10,
 			max: 600,
@@ -214,7 +214,7 @@ const advancedCoreBindings: ConfigBinding[] = [
 		setting: {
 			id: "autoOpenBrowser",
 			label: "Open curator automatically",
-			description: "Open the review UI when a local search starts.",
+			description: "Открывать интерфейс проверки при начале локального поиска.",
 			type: "toggle",
 		},
 		path: ["autoOpenBrowser"],
@@ -225,7 +225,7 @@ const advancedCoreBindings: ConfigBinding[] = [
 type ProviderSectionDefinition = {
 	value: string;
 	label: string;
-	/** Setting id of the API key shown first in the Provider section, when the provider has one. */
+	/** Setting id of the API key shown first in the Провайдер section, when the provider has one. */
 	credentialId?: string;
 	/** Setting id of the base URL shown after the API key, when the provider has one. */
 	baseUrlId?: string;
@@ -849,7 +849,7 @@ const privacyBindings: ConfigBinding[] = [
 	fetchDomainDenyBinding,
 ];
 
-/** Everything on the Provider page that is not provider-specific lands in Advanced. */
+/** Everything on the Провайдер page that is not provider-specific lands in Дополнительно. */
 const advancedBindings: ConfigBinding[] = [
 	...advancedCoreBindings,
 	summaryModelBinding,
@@ -873,10 +873,10 @@ function providerSection(provider: string): AetherSettingsSection & { bindings: 
 	}
 	return {
 		id: "provider",
-		title: "Provider",
+		title: "Провайдер",
 		description: section
-			? `Default provider and ${section.label} configuration. Credentials are persisted in the existing Pi config file.`
-			: "Pick a specific provider above to configure its API key, base URL, and provider-specific options.",
+			? `Настройка провайдера и раздела ${section.label}. Данные доступа сохраняются в существующем файле конфигурации Pi.`
+			: "Выберите провайдера выше, чтобы настроить API-ключ, базовый URL и дополнительные параметры.",
 		settings: bindings.map((item) => item.setting),
 		bindings,
 	};
@@ -884,16 +884,16 @@ function providerSection(provider: string): AetherSettingsSection & { bindings: 
 
 const toolsSection: AetherSettingsSection = {
 	id: "tools",
-	title: "Web search tools",
-	description: "Register search and source-check tools after the next extension reload.",
+	title: "Инструменты веб-поиска",
+	description: "Зарегистрировать инструменты поиска и проверки источников после следующей перезагрузки расширений.",
 	settings: [webSearchEnabledBinding.setting],
 };
 
 /** Fallback layout for Aether builds that do not render page-level sections yet. */
 const generalCategory: AetherSettingsCategory = {
 	id: "general",
-	title: "Web search tools",
-	subtitle: "Master switch for web search and source verification",
+	title: "Инструменты веб-поиска",
+	subtitle: "Главный переключатель веб-поиска и проверки источников",
 	icon: "auto",
 	order: 0,
 	sections: [toolsSection],
@@ -901,27 +901,27 @@ const generalCategory: AetherSettingsCategory = {
 
 const extractionCategory: AetherSettingsCategory = {
 	id: "extraction",
-	title: "Context Extraction",
-	subtitle: "GitHub, video, and PDF handling",
+	title: "Извлечение контекста",
+	subtitle: "Работа с GitHub, видео и PDF",
 	icon: "code",
 	order: 2,
 	sections: [
 		{
 			id: "github",
 			title: "GitHub",
-			description: "Repository cloning, cache path, and size limits",
+			description: "Клонирование репозиториев, путь к кэшу и ограничения размера",
 			settings: githubBindings.map((item) => item.setting),
 		},
 		{
 			id: "youtube",
 			title: "YouTube",
-			description: "Transcript and video understanding for YouTube and local files",
+			description: "Расшифровка и анализ видео YouTube и локальных файлов",
 			settings: youtubeBindings.map((item) => item.setting),
 		},
 		{
 			id: "pdf",
 			title: "PDF",
-			description: "PDF download limits",
+			description: "Ограничения загрузки PDF",
 			settings: pdfBindings.map((item) => item.setting),
 		},
 	],
@@ -929,14 +929,14 @@ const extractionCategory: AetherSettingsCategory = {
 
 const privacyCategory: AetherSettingsCategory = {
 	id: "privacy",
-	title: "Privacy and network",
-	subtitle: "Browser data access, SSRF exceptions, and fetch domain policy",
+	title: "Конфиденциальность и сеть",
+	subtitle: "Доступ к данным браузера, исключения SSRF и правила доменов загрузки",
 	icon: "info",
 	order: 3,
 	sections: [{
 		id: "privacy",
-		title: "Privacy and network",
-		description: "SSRF exceptions and fetch domain policy",
+		title: "Конфиденциальность и сеть",
+		description: "Исключения SSRF и правила доменов загрузки",
 		settings: privacyBindings.map((item) => item.setting),
 	}],
 };
@@ -945,16 +945,16 @@ function categoriesForProvider(provider: string): AetherSettingsCategory[] {
 	return [
 		{
 			id: "provider",
-			title: "Provider",
-			subtitle: "Default search provider, credentials, and base URLs",
+			title: "Провайдер",
+			subtitle: "Провайдер поиска по умолчанию, учётные данные и базовые URL",
 			icon: "auto",
 			order: 1,
 			sections: [
 				providerSection(provider),
 				{
 					id: "advanced",
-					title: "Advanced",
-					description: "Routing, review workflow, and summary model",
+					title: "Дополнительно",
+					description: "Маршрутизация, проверка результатов и модель сводки",
 					settings: advancedBindings.map((item) => item.setting),
 				},
 			],
@@ -1074,11 +1074,11 @@ function statusCard(api: AetherExtensionAPI, title: string, message: AetherJsonO
 
 function messageTypes(api: AetherExtensionAPI): AetherMessageTypeDefinition[] {
 	return [
-		{ type: "web-search-results", title: "Web research", icon: "auto", render: ({ message }) => statusCard(api, "Web research", message) },
-		{ type: "web-search-content-ready", title: "Web content ready", icon: "refresh", render: ({ message }) => statusCard(api, "Web content ready", message) },
-		{ type: "web-search-error", title: "Web access error", icon: "warning", render: ({ message }) => statusCard(api, "Web access error", message, "error") },
-		{ type: "curator-config", title: "Search workflow", icon: "settings", render: ({ message }) => statusCard(api, "Search workflow updated", message) },
-		{ type: "google-account", title: "Gemini Web account", icon: "info", render: ({ message }) => statusCard(api, "Gemini Web account", message) },
+		{ type: "web-search-results", title: "Исследование в интернете", icon: "auto", render: ({ message }) => statusCard(api, "Исследование в интернете", message) },
+		{ type: "web-search-content-ready", title: "Веб-содержимое готово", icon: "refresh", render: ({ message }) => statusCard(api, "Веб-содержимое готово", message) },
+		{ type: "web-search-error", title: "Ошибка веб-доступа", icon: "warning", render: ({ message }) => statusCard(api, "Ошибка веб-доступа", message, "error") },
+		{ type: "curator-config", title: "Процесс поиска", icon: "settings", render: ({ message }) => statusCard(api, "Процесс поиска updated", message) },
+		{ type: "google-account", title: "Учётная запись Gemini Web", icon: "info", render: ({ message }) => statusCard(api, "Учётная запись Gemini Web", message) },
 	];
 }
 
@@ -1116,7 +1116,7 @@ export const activateAether = async (aether: AetherExtensionAPI) => {
 		config = readConfig();
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
-		aether.host.invoke("app.notify", { message: `Web Access settings could not read the Pi config: ${message}` }).catch(() => {});
+		aether.host.invoke("app.notify", { message: `Веб-доступ settings could not read the Pi config: ${message}` }).catch(() => {});
 	}
 	const storage = aether.storage.snapshot();
 	const settingStorageKey = (settingId: string) => `settings:${SETTINGS_PAGE_ID}:${settingId}`;
@@ -1143,8 +1143,8 @@ export const activateAether = async (aether: AetherExtensionAPI) => {
 	const registerSettingsPage = (providerValue: string) => {
 		const definition = {
 			id: SETTINGS_PAGE_ID,
-			title: "Web Access",
-			subtitle: "Search, source verification, extraction, and provider routing",
+			title: "Веб-доступ",
+			subtitle: "Поиск, проверка источников, извлечение данных и маршрутизация провайдеров",
 			icon: "auto",
 			order: 20,
 			sections: [toolsSection],
@@ -1188,7 +1188,7 @@ export const activateAether = async (aether: AetherExtensionAPI) => {
 					aether.storage.set(settingStorageKey("provider"), "auto");
 					registerSettingsPage("auto");
 				}
-				await aether.host.invoke("app.notify", { message: "Web Access setting saved. Reload the Pi extension to apply it." }).catch(() => {});
+				await aether.host.invoke("app.notify", { message: "Настройки веб-доступа сохранены. Перезагрузите расширение Pi, чтобы применить изменения." }).catch(() => {});
 				return { setting: binding.setting.id, value };
 			});
 		}
@@ -1205,8 +1205,8 @@ export const activateAether = async (aether: AetherExtensionAPI) => {
 	});
 	aether.registerComposerMenuItem({
 		id: "research-web",
-		title: "Research on the web",
-		subtitle: "Draft a multi-source research request",
+		title: "Исследование в интернете",
+		subtitle: "Создание запроса для исследования по нескольким источникам",
 		icon: "auto",
 		order: 30,
 		action: "research-draft",
@@ -1222,7 +1222,7 @@ export const activateAether = async (aether: AetherExtensionAPI) => {
 			const activity = latest as AetherJsonObject;
 			const payload = activity.payload && typeof activity.payload === "object" ? activity.payload as AetherJsonObject : {};
 			const type = String(activity.type ?? "");
-			const title = type === "web-search-error" ? "Web access error" : type === "web-search-content-ready" ? "Web content ready" : "Latest web activity";
+			const title = type === "web-search-error" ? "Ошибка веб-доступа" : type === "web-search-content-ready" ? "Веб-содержимое готово" : "Latest web activity";
 			return aether.ui.column([
 				statusCard(aether, title, { ...payload, text: activity.text }, type === "web-search-error" ? "error" : "neutral"),
 				aether.ui.button("Dismiss", "dismiss-latest-activity", { tone: "neutral", icon: "close" }),

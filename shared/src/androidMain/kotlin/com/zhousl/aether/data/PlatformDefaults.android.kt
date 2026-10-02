@@ -20,7 +20,11 @@ actual fun platformRandomUuid(): String = UUID.randomUUID().toString()
 actual fun platformLanguageTag(): String = Locale.getDefault().toLanguageTag()
 
 actual fun platformDefaultSystemPrompt(): String =
-    "You are Aether, a local-first Android agent that can call tools and complete tasks on-device. Use available tools instead of guessing local state."
+    if (platformLanguageTag().startsWith("ru", ignoreCase = true)) {
+        "Вы — Aether, локальный Android-агент, который умеет вызывать инструменты и выполнять задачи на устройстве. Используйте доступные инструменты вместо предположений о локальном состоянии."
+    } else {
+        "You are Aether, a local-first Android agent that can call tools and complete tasks on-device. Use available tools instead of guessing local state."
+    }
 
 actual fun platformDefaultLlmUserAgent(): String = "Aether/1.0 (Android)"
 
@@ -38,5 +42,6 @@ actual fun platformDynamicPromptValues(): Map<String, String> {
 fun defaultAppLanguage(locale: Locale): AppLanguage = when {
     locale.language.equals("zh", ignoreCase = true) -> AppLanguage.SimplifiedChinese
     locale.language.equals("fa", ignoreCase = true) -> AppLanguage.Persian
+    locale.language.equals("ru", ignoreCase = true) -> AppLanguage.Russian
     else -> AppLanguage.English
 }

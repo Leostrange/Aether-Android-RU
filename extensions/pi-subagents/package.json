@@ -1,7 +1,7 @@
 {
   "name": "@tintinweb/pi-subagents",
   "version": "0.16.1-aether.1",
-  "description": "A pi extension extension that brings smart Claude Code-style autonomous sub-agents to pi.",
+  "description": "Расширение Pi с автономными субагентами в стиле Claude Code.",
   "author": "tintinweb",
   "license": "MIT",
   "repository": {

@@ -342,6 +342,7 @@ private fun settingsLanguageDisplayName(language: AppLanguage): String = when (l
     AppLanguage.English -> stringResource(R.string.language_english)
     AppLanguage.SimplifiedChinese -> stringResource(R.string.language_simplified_chinese)
     AppLanguage.Persian -> stringResource(R.string.language_persian)
+    AppLanguage.Russian -> stringResource(R.string.language_russian)
 }
 
 @Composable
@@ -349,6 +350,7 @@ private fun settingsLanguageSubtitle(language: AppLanguage): String = when (lang
     AppLanguage.English -> stringResource(R.string.settings_language_english_interface)
     AppLanguage.SimplifiedChinese -> stringResource(R.string.settings_language_simplified_chinese_interface)
     AppLanguage.Persian -> stringResource(R.string.settings_language_persian_interface)
+    AppLanguage.Russian -> stringResource(R.string.settings_language_russian_interface)
 }
 
 @Composable
@@ -1421,8 +1423,8 @@ private fun SettingsHub(
                         if (index > 0) CardDivider()
                         SettingsNavRow(
                             icon = extensionIcon(settingPage.icon),
-                            title = settingPage.title,
-                            subtitle = settingPage.subtitle.ifBlank { settingPage.extensionName },
+                            title = localizedExtensionText(settingPage.title),
+                            subtitle = localizedExtensionText(settingPage.subtitle.ifBlank { settingPage.extensionName }),
                             onClick = { onOpenExtensionSettings(settingPage.id) },
                         )
                     }
@@ -3006,7 +3008,7 @@ private fun AetherExtensionSettingsCategoriesPage(
     val controller = LocalAetherExtensionUiController.current
     val trailingIcon = settingsTrailingIcon(page.trailingIcon)
     SubPageScaffold(
-        title = page.title,
+        title = localizedExtensionText(page.title),
         onBack = onBack,
         trailingIcon = trailingIcon,
         onTrailingAction = {
@@ -3020,7 +3022,7 @@ private fun AetherExtensionSettingsCategoriesPage(
         },
     ) {
         if (page.subtitle.isNotBlank()) {
-            Text(page.subtitle, style = MaterialTheme.typography.bodySmall, color = AetherOnSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
+            Text(localizedExtensionText(page.subtitle), style = MaterialTheme.typography.bodySmall, color = AetherOnSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
             Spacer(Modifier.height(12.dp))
         }
         if (page.sections.isNotEmpty()) {
@@ -3032,8 +3034,8 @@ private fun AetherExtensionSettingsCategoriesPage(
             visibleCategories.forEachIndexed { index, category ->
                 SettingsNavRow(
                     icon = extensionIcon(category.icon),
-                    title = category.title,
-                    subtitle = category.subtitle,
+                    title = localizedExtensionText(category.title),
+                    subtitle = localizedExtensionText(category.subtitle),
                 ) { onCategorySelected(category.id) }
                 if (index < visibleCategories.lastIndex) CardDivider()
             }
@@ -3049,8 +3051,8 @@ private fun AetherExtensionSettingsSections(
     onCategorySelected: (String) -> Unit = {},
 ) {
     sections.forEachIndexed { sectionIndex, section ->
-        val sectionTitle = section.optString("title")
-        val sectionDescription = section.optString("description")
+        val sectionTitle = localizedExtensionText(section.optString("title"))
+        val sectionDescription = localizedExtensionText(section.optString("description"))
         if (sectionIndex > 0) Spacer(Modifier.height(16.dp))
         if (sectionTitle.isNotBlank() || sectionDescription.isNotBlank()) {
             if (sectionTitle.isNotBlank()) {
@@ -3138,8 +3140,8 @@ private fun AetherExtensionControlRow(
     val uriHandler = LocalUriHandler.current
     val id = "${page.id}:${setting.optString("id")}"
     val type = setting.optString("type").ifBlank { "text" }
-    val label = setting.optString("label").ifBlank { setting.optString("title") }
-    val description = setting.optString("description").ifBlank { setting.optString("subtitle") }
+    val label = localizedExtensionText(setting.optString("label").ifBlank { setting.optString("title") })
+    val description = localizedExtensionText(setting.optString("description").ifBlank { setting.optString("subtitle") })
     val action = setting.optString("action").ifBlank {
         "settings:${page.localId}:${setting.optString("id")}"
     }
@@ -3182,7 +3184,7 @@ private fun AetherExtensionControlRow(
                                 selected = selected == value,
                                 onClick = { selected = value; update(value) },
                                 shape = SegmentedButtonDefaults.itemShape(optionIndex, options.length()),
-                            ) { Text(option.optString("label").ifBlank { value }) }
+                            ) { Text(localizedExtensionText(option.optString("label").ifBlank { value })) }
                         }
                     }
                 }
@@ -3201,8 +3203,8 @@ private fun AetherExtensionControlRow(
                         val value = option.optString("value")
                         SelectionOption(
                             key = value,
-                            title = option.optString("label").ifBlank { value },
-                            subtitle = option.optString("description"),
+                            title = localizedExtensionText(option.optString("label").ifBlank { value }),
+                            subtitle = localizedExtensionText(option.optString("description")),
                             selected = selected == value,
                             onClick = { selected = value; update(value) },
                         )
@@ -3557,9 +3559,9 @@ private fun AetherExtensionEmptyState(
     controller: AetherExtensionUiController?,
     onCategorySelected: (String) -> Unit,
 ) {
-    val title = setting.optString("title").ifBlank { setting.optString("label") }
-    val description = setting.optString("description").ifBlank { setting.optString("subtitle") }
-    val buttonLabel = setting.optString("buttonLabel").ifBlank { "Add" }
+    val title = localizedExtensionText(setting.optString("title").ifBlank { setting.optString("label") })
+    val description = localizedExtensionText(setting.optString("description").ifBlank { setting.optString("subtitle") })
+    val buttonLabel = localizedExtensionText(setting.optString("buttonLabel").ifBlank { "Add" })
     val action = setting.optString("action")
     val category = setting.optString("category")
     val args = setting.optJSONObject("args") ?: JSONObject()
@@ -3616,7 +3618,7 @@ private fun AetherExtensionSettingsPage(
     val trailingCategory = category?.trailingCategory?.ifBlank { null } ?: page.trailingCategory
     val trailingArgs = category?.trailingArgs?.takeIf { it.length() > 0 } ?: page.trailingArgs
     SubPageScaffold(
-        title = category?.title ?: page.title,
+        title = localizedExtensionText(category?.title ?: page.title),
         onBack = onBack,
         trailingIcon = trailingIcon,
         onTrailingAction = {
@@ -3630,11 +3632,78 @@ private fun AetherExtensionSettingsPage(
         },
     ) {
         if (category != null && category.subtitle.isNotBlank()) {
-            Text(category.subtitle, style = MaterialTheme.typography.bodySmall, color = AetherOnSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
+            Text(localizedExtensionText(category.subtitle), style = MaterialTheme.typography.bodySmall, color = AetherOnSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
             Spacer(Modifier.height(12.dp))
         }
         AetherExtensionSettingsSections(category?.sections ?: page.sections, page, controller)
     }
+}
+
+private fun localizedExtensionText(value: String): String = when (value) {
+    "Web Access" -> "Веб-доступ"
+    "Search, source verification, extraction, and provider routing" -> "Поиск, проверка источников, извлечение данных и маршрутизация провайдеров"
+    "Web search tools" -> "Инструменты веб-поиска"
+    "Register search and source-check tools after the next extension reload." -> "Зарегистрировать инструменты поиска и проверки источников после следующей перезагрузки расширений."
+    "Provider" -> "Провайдер"
+    "Default search provider, credentials, and base URLs" -> "Провайдер поиска по умолчанию, учётные данные и базовые URL"
+    "Context Extraction" -> "Извлечение контекста"
+    "GitHub, video, and PDF handling" -> "Работа с GitHub, видео и PDF"
+    "Privacy and network" -> "Конфиденциальность и сеть"
+    "Browser data access, SSRF exceptions, and fetch domain policy" -> "Доступ к данным браузера, исключения SSRF и правила доменов загрузки"
+    "MCP Servers" -> "MCP-серверы"
+    "Manage MCP servers, inspect each transport config, and keep only the connections you want active." -> "Управляйте MCP-серверами, проверяйте настройки транспорта и оставляйте только нужные подключения активными."
+    "Subagents" -> "Субагенты"
+    "Subagent concurrency, dispatch, persistence, and Aether UI" -> "Параллелизм, распределение задач, сохранение данных и интерфейс Aether для субагентов"
+    "Subagent Types" -> "Типы субагентов"
+    "Enable, disable, and reload custom agent definitions" -> "Включение, отключение и перезагрузка пользовательских определений агентов"
+    "Runtime" -> "Среда выполнения"
+    "Agents" -> "Агенты"
+    "Models" -> "Модели"
+    "Aether and Pi UI" -> "Интерфейс Aether и Pi"
+    "Max concurrency" -> "Максимальный параллелизм"
+    "Default max turns" -> "Максимум ходов по умолчанию"
+    "Grace turns" -> "Дополнительные ходы"
+    "Nested depth" -> "Глубина вложенности"
+    "Join mode" -> "Режим объединения"
+    "Scheduling" -> "Планирование"
+    "Output transcript" -> "Сохранять расшифровку"
+    "Disable defaults" -> "Отключить стандартных агентов"
+    "Fallback agent" -> "Резервный агент"
+    "Strict agent files" -> "Строгая проверка файлов агентов"
+    "Tool description" -> "Описание инструментов"
+    "Scope models" -> "Ограничить модели"
+    "Widget" -> "Виджет"
+    "Fleet view" -> "Вид флота"
+    "Agent mentions" -> "Упоминания агентов"
+    "Remember agents" -> "Запоминать агентов"
+    "Manage" -> "Управление"
+    "Create agent definition" -> "Создать определение агента"
+    "Reload agent files" -> "Перезагрузить файлы агентов"
+    "MCP Runtime" -> "Среда выполнения MCP"
+    "No MCP servers" -> "Нет MCP-серверов"
+    "Add HTTP or stdio servers to extend capabilities." -> "Добавьте HTTP- или stdio-серверы для расширения возможностей."
+    "Add server" -> "Добавить сервер"
+    "Add MCP server" -> "Добавить MCP-сервер"
+    "New MCP server" -> "Новый MCP-сервер"
+    "Configuration" -> "Конфигурация"
+    "Runtime and OAuth" -> "Среда выполнения и OAuth"
+    "Maximum concurrent background agents. Queued agents start as slots free." -> "Максимальное число фоновых агентов. Ожидающие агенты запускаются по мере освобождения мест."
+    "Default maximum agentic turns before wrap-up. 0 means unlimited." -> "Максимальное число ходов агента до завершения. 0 означает без ограничений."
+    "Additional turns after the wrap-up steering message." -> "Дополнительные ходы после сообщения о завершении."
+    "Hard cap on nested delegation. Main is 0; 0 or 1 disables nesting." -> "Ограничение вложенного делегирования. Основной агент имеет уровень 0; 0 или 1 отключает вложенность."
+    "Default completion grouping for background agents." -> "Группировка завершения фоновых агентов по умолчанию."
+    "Enable the schedule parameter and scheduled-job menu. Tool-spec changes apply on the next Pi session." -> "Включить параметр расписания и меню запланированных задач. Изменения применятся в следующем сеансе Pi."
+    "Write each subagent .output transcript by default. Agent frontmatter can override this." -> "По умолчанию сохранять расшифровку .output каждого субагента. Настройки агента могут изменить это."
+    "Hide built-in general-purpose, Explore, and Plan agents. Custom agents are unaffected." -> "Скрыть встроенных агентов общего назначения, Explore и Plan. Пользовательские агенты не затрагиваются."
+    "Agent used when subagent_type is unknown, disabled, or ambiguous. none rejects the call instead." -> "Агент, используемый при неизвестном, отключённом или неоднозначном типе. none отклоняет вызов."
+    "Fail startup on an unreadable or unparseable agent .md file instead of skipping it." -> "Останавливать запуск при нечитаемом или некорректном файле агента .md вместо его пропуска."
+    "Agent tool description size/mode. Custom reads .pi/agent-tool-description.md." -> "Размер и режим описания инструментов агента. Custom читает .pi/agent-tool-description.md."
+    "Validate subagent model choices against Pi scoped models (/scoped-models)." -> "Проверять выбор моделей субагентов по моделям Pi из /scoped-models."
+    "Live Aether agent card visibility above the composer." -> "Показывать карточку активного агента Aether над полем ввода."
+    "Keep the TUI FleetView enabled for Pi CLI; Aether renders the same roster as tappable cards." -> "Сохранять FleetView TUI для Pi CLI; Aether показывает тот же список в виде карточек."
+    "Route @handle messages to that agent. Model starts new agents through an off-screen clone; direct starts them immediately." -> "Направлять сообщения @handle выбранному агенту. Режим Model запускает агентов через скрытую копию, Direct — сразу."
+    "Persist subagent sessions so @handle can resume them long after completion." -> "Сохранять сеансы субагентов, чтобы @handle мог возобновить их после завершения."
+    else -> value
 }
 
 private fun settingsTrailingIcon(name: String): ImageVector? {

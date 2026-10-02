@@ -1183,7 +1183,7 @@ internal fun npmInstallPlanForPackage(packageRoot: File): NpmInstallPlan? {
         "npm install"
     }
     return NpmInstallPlan(
-        command = "$installCommand --omit=dev --no-audit --no-fund",
+        command = "$installCommand --omit=dev --no-audit --no-fund --prefer-offline --fetch-retries=4 --fetch-retry-factor=2 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=20000",
     )
 }
 
