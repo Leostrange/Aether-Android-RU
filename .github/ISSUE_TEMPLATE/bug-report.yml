@@ -14,7 +14,7 @@ body:
           required: true
         - label: I have searched existing issues and found no relevant issues. / 我已搜索过 Issue，且未找到相关内容。
           required: true
-        - label: I have updated to the latest Aether Nightly, and the bug still occurs. / 我已更新至最新 Aether Nightly，且该 Bug 仍然存在。
+        - label: I have updated to the latest последней Android-сборки, and the bug still occurs. / 我已更新至最新 последней Android-сборки，且该 Bug 仍然存在。
           required: true
         - label: I have removed secrets and personal information. / 我已移除密钥和个人信息。
           required: true
@@ -27,8 +27,6 @@ body:
       multiple: true
       options:
         - Android
-        - iOS
-        - macOS
     validations:
       required: true
 
