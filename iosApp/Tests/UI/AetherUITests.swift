@@ -15,6 +15,7 @@ final class AetherUITests: XCTestCase {
             privacyAgreement.tap()
         }
 
+        waitForChatStartup(app)
         let composer = app.textViews.firstMatch
         XCTAssertTrue(composer.waitForExistence(timeout: 30))
         composer.tap()
@@ -23,6 +24,7 @@ final class AetherUITests: XCTestCase {
         let send = app.buttons["Send"]
         XCTAssertTrue(send.waitForExistence(timeout: 10))
         send.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 10))
 
         for second in 1...30 {
             XCTAssertEqual(
@@ -33,6 +35,57 @@ final class AetherUITests: XCTestCase {
             Thread.sleep(forTimeInterval: 1)
         }
         XCTAssertTrue(composer.waitForExistence(timeout: 10))
+    }
+
+    func testBackgroundTapDismissesKeyboardAndPreservesDraft() throws {
+        let (app, composer, background) = try openEmptyChatWithKeyboard()
+        background.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForNonExistence(timeout: 10))
+        XCTAssertEqual(composer.value as? String, "Keyboard dismissal draft", composer.debugDescription)
+
+        composer.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 10))
+    }
+
+    func testBackgroundLongPressAndDragKeepKeyboardVisible() throws {
+        let (app, composer, background) = try openEmptyChatWithKeyboard()
+        let keyboard = app.keyboards.firstMatch
+
+        composer.tap()
+        XCTAssertTrue(keyboard.exists, "Tapping the input must keep the keyboard open")
+
+        background.press(forDuration: 0.8)
+        XCTAssertTrue(keyboard.exists, "A long press must not dismiss the keyboard")
+
+        // An empty conversation cannot scroll, so this also checks movement rejection
+        // when no scrolling child consumes the drag.
+        background.press(
+            forDuration: 0.05,
+            thenDragTo: background.withOffset(CGVector(dx: 0, dy: -100)),
+            withVelocity: .fast,
+            thenHoldForDuration: 0
+        )
+        XCTAssertTrue(keyboard.exists, "A vertical drag must not dismiss the keyboard")
+        // Drag left to avoid opening the navigation drawer before the next tap.
+        background.press(
+            forDuration: 0.05,
+            thenDragTo: background.withOffset(CGVector(dx: -80, dy: 0)),
+            withVelocity: .fast,
+            thenHoldForDuration: 0
+        )
+        XCTAssertTrue(keyboard.exists, "A horizontal drag must not dismiss the keyboard")
+        XCTAssertEqual(composer.value as? String, "Keyboard dismissal draft")
+
+        background.press(
+            forDuration: 0.05,
+            thenDragTo: background.withOffset(CGVector(dx: 2, dy: 1)),
+            withVelocity: .fast,
+            thenHoldForDuration: 0
+        )
+        XCTAssertTrue(
+            keyboard.waitForNonExistence(timeout: 10),
+            "A short tap with minor finger movement should dismiss the keyboard"
+        )
     }
 
     func testComposerStaysAtBottomAfterOrientationRoundTrip() throws {
@@ -56,6 +109,37 @@ final class AetherUITests: XCTestCase {
         XCTAssertTrue(waitForPortrait(app))
         XCTAssertTrue(composer.waitForExistence(timeout: 10))
         XCTAssertLessThan(app.frame.maxY - composer.frame.maxY, 120)
+    }
+
+    func testKeyboardKeepsComposerVisibleAndSidebarStationary() throws {
+        let app = XCUIApplication()
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let privacyAgreement = app.buttons["Agree"]
+        if privacyAgreement.waitForExistence(timeout: 5) {
+            privacyAgreement.tap()
+        }
+        waitForChatStartup(app)
+        let composer = app.textViews.firstMatch
+        XCTAssertTrue(composer.waitForExistence(timeout: 30))
+        let settings = app.buttons["Settings"]
+        let sidebarFrame = settings.exists ? settings.frame : nil
+        composer.tap()
+        let keyboard = app.keyboards.firstMatch
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 10))
+        let settled = NSPredicate { _, _ in
+            composer.frame.maxY <= keyboard.frame.minY && composer.frame.height > 0
+        }
+        expectation(for: settled, evaluatedWith: app)
+        waitForExpectations(timeout: 10)
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            let originalFrame = try XCTUnwrap(sidebarFrame)
+            XCTAssertEqual(settings.frame.minY, originalFrame.minY, accuracy: 1)
+            XCTAssertEqual(settings.frame.minX, originalFrame.minX, accuracy: 1)
+        }
+        let screenshot = XCTAttachment(screenshot: app.screenshot())
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
     }
 
     func testOnboardingRuntimeAndIOSCapabilitySurface() throws {
@@ -158,6 +242,43 @@ final class AetherUITests: XCTestCase {
         localizedDarkHome.name = "Chinese dark chat home"
         localizedDarkHome.lifetime = .keepAlways
         add(localizedDarkHome)
+    }
+
+    private func openEmptyChatWithKeyboard() throws -> (XCUIApplication, XCUIElement, XCUICoordinate) {
+        let app = XCUIApplication()
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        let privacyAgreement = app.buttons["Agree"]
+        if privacyAgreement.waitForExistence(timeout: 5) {
+            privacyAgreement.tap()
+        }
+        let newChat = app.buttons["New chat"].firstMatch
+        waitForChatStartup(app)
+        newChat.tap()
+        let composer = app.textViews.firstMatch
+        XCTAssertTrue(composer.waitForExistence(timeout: 10))
+        composer.tap()
+        composer.typeText("Keyboard dismissal draft")
+        let keyboard = app.keyboards.firstMatch
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 10))
+        let settled = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in composer.frame.maxY <= keyboard.frame.minY },
+            object: nil
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [settled], timeout: 10), .completed)
+        XCTAssertEqual(composer.value as? String, "Keyboard dismissal draft", composer.debugDescription)
+        XCTAssertTrue(app.buttons["Send"].isEnabled)
+        let background = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(
+            dx: composer.frame.midX - app.frame.minX,
+            dy: (composer.frame.minY - app.frame.minY) / 2
+        ))
+        return (app, composer, background)
+    }
+
+    private func waitForChatStartup(_ app: XCUIApplication) {
+        XCTAssertTrue(app.buttons["New chat"].firstMatch.waitForExistence(timeout: 30))
+        let loading = app.descendants(matching: .any)["aether-startup-loading"]
+        XCTAssertTrue(loading.waitForNonExistence(timeout: 120))
     }
 
     private func waitForLandscape(_ app: XCUIApplication) -> Bool {

@@ -91,6 +91,18 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <provider
+            android:name=".runtime.AlpineDocumentsProvider"
+            android:authorities="${applicationId}.alpine.documents"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:label="${appLabel}"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
 
         <service
             android:name=".AetherForegroundService"

@@ -236,13 +236,17 @@ private fun SettingsNavRowContent(
                 style = MaterialTheme.typography.bodyLarge,
                 color = AetherOnSurface.copy(alpha = contentAlpha),
             )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = AetherOnSurfaceVariant.copy(alpha = contentAlpha),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            // An empty Text still takes a full line, which pushes a title-only row's title above the
+            // vertically centered icon and chevron.
+            if (subtitle.isNotBlank()) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = AetherOnSurfaceVariant.copy(alpha = contentAlpha),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
         if (showChevron) {
             Spacer(Modifier.width(8.dp))

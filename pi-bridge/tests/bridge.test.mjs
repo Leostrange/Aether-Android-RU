@@ -1131,9 +1131,9 @@ test("reports pinned bridge and Pi versions", async () => {
   const ping = await client.request("ping-1", "ping");
 
   assert.equal(ping.bridge_version, "2.0.0-alpha.0");
-  assert.equal(ping.pi_ai_version, "0.84.1");
-  assert.equal(ping.pi_agent_core_version, "0.84.1");
-  assert.equal(ping.pi_coding_agent_version, "0.84.1");
+  assert.equal(ping.pi_ai_version, "0.87.1");
+  assert.equal(ping.pi_agent_core_version, "0.87.1");
+  assert.equal(ping.pi_coding_agent_version, "0.87.1");
   assert.match(ping.node_version, /^v\d+\./);
 });
 
@@ -2539,8 +2539,8 @@ test("lists every built-in Pi provider and its model catalog", async () => {
   const catalog = await client.request("providers", "list_providers");
   const providers = catalog.providers;
 
-  assert.equal(providers.length, 39);
-  assert.equal(new Set(providers.map((provider) => provider.id)).size, 39);
+  assert.equal(providers.length, 41);
+  assert.equal(new Set(providers.map((provider) => provider.id)).size, 41);
   assert.ok(providers.every((provider) => provider.models.length > 0));
   assert.ok(providers.every((provider) => provider.models.every((model) => model.id)));
 
@@ -2552,8 +2552,10 @@ test("lists every built-in Pi provider and its model catalog", async () => {
     "anthropic",
     "github-copilot",
     "kimi-coding",
+    "meta",
     "openai-codex",
     "openrouter",
+    "radius",
     "xai",
   ]);
 });

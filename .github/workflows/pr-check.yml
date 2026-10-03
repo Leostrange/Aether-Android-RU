@@ -1,7 +1,6 @@
 name: PR Check
 
 on:
-  workflow_dispatch:
   pull_request:
 
 permissions:
@@ -16,26 +15,19 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      android: ${{ steps.manual.outputs.android || steps.filter.outputs.android }}
-      ios: ${{ steps.manual.outputs.ios || steps.filter.outputs.ios }}
+      android: ${{ steps.filter.outputs.android }}
+      ios: ${{ steps.filter.outputs.ios }}
+      node: ${{ steps.filter.outputs.node }}
     steps:
-      - name: Run all checks for manual dispatch
-        id: manual
-        if: github.event_name == 'workflow_dispatch'
-        shell: bash
-        run: |
-          echo "android=true" >> "$GITHUB_OUTPUT"
-          echo "ios=true" >> "$GITHUB_OUTPUT"
-
       - name: Detect changed areas
         id: filter
-        if: github.event_name == 'pull_request'
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
         with:
           filters: |
             android:
               - 'app/**'
               - 'shared/**'
+              - 'extensions/**'
               - 'pi-bridge/**'
               - 'packages/extension-api/**'
               - 'third_party/termux/**'
@@ -49,6 +41,7 @@ jobs:
               - '.github/workflows/pr-check.yml'
             ios:
               - 'shared/**'
+              - 'extensions/**'
               - 'pi-bridge/**'
               - 'packages/extension-api/**'
               - 'build.gradle.kts'
@@ -60,17 +53,59 @@ jobs:
               - 'scripts/bootstrap-ios.sh'
               - 'scripts/prepare-ios-runtime.sh'
               - 'scripts/build-ios-ish-runtime.sh'
+              - 'third_party/ish-arm64'
               - 'third_party/ish-arm64/**'
               - '.gitmodules'
               - 'LICENSE'
               - 'THIRD_PARTY_NOTICES.md'
-              - 'app/src/main/assets/fonts/JetBrainsMono-Regular.ttf'
               - '.github/workflows/pr-check.yml'
+            node:
+              - 'extensions/**'
+              - 'pi-bridge/**'
+              - 'packages/extension-api/**'
+              - '.github/workflows/pr-check.yml'
+
+  node:
+    needs: changes
+    if: ${{ needs.changes.outputs.node == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: npm
+          cache-dependency-path: |
+            pi-bridge/package-lock.json
+            packages/extension-api/package-lock.json
+
+      - name: Check Pi Bridge types
+        working-directory: pi-bridge
+        run: |
+          npm ci --ignore-scripts --legacy-peer-deps
+          npm run check
+
+      - name: Test Pi Bridge
+        working-directory: pi-bridge
+        run: npm test
+
+      - name: Check Extension API
+        working-directory: packages/extension-api
+        run: |
+          npm ci --ignore-scripts
+          npm run check
 
   android:
     needs: changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.android == 'true' }}
+    if: ${{ needs.changes.outputs.android == 'true' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -83,14 +118,23 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: npm
+          cache-dependency-path: pi-bridge/package-lock.json
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
           cache-provider: enhanced
-          cache-read-only: false
+          cache-read-only: true
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
 
       - name: Make Gradle executable
         run: chmod +x ./gradlew
@@ -111,20 +155,20 @@ jobs:
 
   ios:
     needs: changes
-    if: ${{ github.event_name == 'workflow_dispatch' || needs.changes.outputs.ios == 'true' }}
+    if: ${{ needs.changes.outputs.ios == 'true' }}
     runs-on: macos-26
     timeout-minutes: 60
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
           persist-credentials: false
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -140,7 +184,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           cache-provider: enhanced
-          cache-read-only: false
+          cache-read-only: true
 
       - name: Install iOS build tools
         run: brew install llvm lld meson ninja xcodegen

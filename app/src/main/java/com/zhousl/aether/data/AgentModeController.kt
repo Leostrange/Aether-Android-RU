@@ -45,12 +45,13 @@ private const val AgentDisplayName = "aether-agent-mode"
 private const val AgentModeCaptureExtension = "jpg"
 private const val AgentModeCaptureMimeType = "image/jpeg"
 private const val AgentModeCaptureMaxEdge = 1280
+private const val AgentModeCoordinateSpace = "normalized_0_1000"
 private const val AgentModeCaptureJpegQuality = 85
 private const val ShizukuPermissionRequestCode = 4201
 private const val RootAuthorizationProbeTimeoutMillis = 2_000L
 private const val ShizukuUserServiceBindTimeoutMillis = 20_000L
 private const val ShizukuUserServiceTag = "aether-agent-mode"
-private const val ShizukuUserServiceVersion = 1
+private const val ShizukuUserServiceVersion = 2
 
 private val ShizukuManagerPackages = listOf(
     "moe.shizuku.privileged.api",
@@ -259,44 +260,45 @@ class AgentModeController(
             }
             "tap" -> {
                 val displayId = ensureDisplay(settings)
-                val x = normalizedX(arguments.optDouble("x", Double.NaN))
-                val y = normalizedY(arguments.optDouble("y", Double.NaN))
-                if (x == null || y == null) {
-                    invalidArguments("Both 'x' and 'y' are required, using 0..1000 screen coordinates.")
-                } else {
-                    requireAgentModeService(settings).tap(displayId, x, y)
-                    updateCursorPosition(x, y, animationDurationMillis = 180)
-                    captureAfterDelay(
-                        settings,
-                        workspaceDirectory,
-                        termuxWorkspaceDirectory,
-                        delayMillis = 350,
-                    )
+                when (val point = resolvePoint(arguments, "x", "y")) {
+                    is ResolvedPoint.Invalid -> invalidArguments(point.message)
+                    is ResolvedPoint.Valid -> {
+                        requireAgentModeService(settings).tap(displayId, point.x, point.y)
+                        updateCursorPosition(point.x, point.y, animationDurationMillis = 180)
+                        captureAfterDelay(
+                            settings,
+                            workspaceDirectory,
+                            termuxWorkspaceDirectory,
+                            delayMillis = 350,
+                            extras = focusExtras(settings, displayId),
+                        )
+                    }
                 }
             }
             "swipe" -> {
                 val displayId = ensureDisplay(settings)
-                val x1 = normalizedX(arguments.optDouble("x1", Double.NaN))
-                val y1 = normalizedY(arguments.optDouble("y1", Double.NaN))
-                val x2 = normalizedX(arguments.optDouble("x2", Double.NaN))
-                val y2 = normalizedY(arguments.optDouble("y2", Double.NaN))
+                val start = resolvePoint(arguments, "x1", "y1")
+                val end = resolvePoint(arguments, "x2", "y2")
                 val durationMs = arguments.optInt("duration_ms", arguments.optInt("durationMs", 500))
                     .coerceIn(50, 10_000)
-                if (x1 == null || y1 == null || x2 == null || y2 == null) {
-                    invalidArguments("x1, y1, x2, and y2 are required, using 0..1000 screen coordinates.")
-                } else {
-                    updateCursorPosition(x1, y1, animationDurationMillis = 80)
-                    controllerScope.launch {
-                        delay(40)
-                        updateCursorPosition(x2, y2, animationDurationMillis = durationMs)
+                when {
+                    start is ResolvedPoint.Invalid -> invalidArguments(start.message)
+                    end is ResolvedPoint.Invalid -> invalidArguments(end.message)
+                    start is ResolvedPoint.Valid && end is ResolvedPoint.Valid -> {
+                        updateCursorPosition(start.x, start.y, animationDurationMillis = 80)
+                        controllerScope.launch {
+                            delay(40)
+                            updateCursorPosition(end.x, end.y, animationDurationMillis = durationMs)
+                        }
+                        requireAgentModeService(settings).swipe(displayId, start.x, start.y, end.x, end.y, durationMs)
+                        captureAfterDelay(
+                            settings,
+                            workspaceDirectory,
+                            termuxWorkspaceDirectory,
+                            delayMillis = durationMs.toLong() + 250,
+                        )
                     }
-                    requireAgentModeService(settings).swipe(displayId, x1, y1, x2, y2, durationMs)
-                    captureAfterDelay(
-                        settings,
-                        workspaceDirectory,
-                        termuxWorkspaceDirectory,
-                        delayMillis = durationMs.toLong() + 250,
-                    )
+                    else -> invalidArguments("x1, y1, x2, and y2 are required.")
                 }
             }
             "key" -> {
@@ -320,13 +322,24 @@ class AgentModeController(
                 if (text.isBlank()) {
                     invalidArguments("Missing required 'text' argument.")
                 } else {
-                    requireAgentModeService(settings).text(displayId, text)
-                    captureAfterDelay(
-                        settings,
-                        workspaceDirectory,
-                        termuxWorkspaceDirectory,
-                        delayMillis = 350,
-                    )
+                    val focus = focusExtras(settings, displayId)
+                    // Only refuse when the focus state was actually read and is empty; unknown focus falls through.
+                    if (focus.has("focused_window") && focus.optString("focused_window").isBlank()) {
+                        toolError(
+                            message = "No window on Agent Mode display $displayId has input focus, so the text would be dropped. " +
+                                "Tap the text field first, then check the screenshot for a cursor or focused field.",
+                            action = action,
+                        )
+                    } else {
+                        val method = requireAgentModeService(settings).text(displayId, text)
+                        captureAfterDelay(
+                            settings,
+                            workspaceDirectory,
+                            termuxWorkspaceDirectory,
+                            delayMillis = 350,
+                            extras = focus.put("text_input_method", method.orEmpty()),
+                        )
+                    }
                 }
             }
             "screenshot" -> {
@@ -729,6 +742,7 @@ class AgentModeController(
         workspaceDirectory: String,
         termuxWorkspaceDirectory: String,
         delayMillis: Long,
+        extras: JSONObject? = null,
     ): String {
         if (delayMillis > 0) delay(delayMillis)
         val captureId = "capture-${System.currentTimeMillis()}"
@@ -765,10 +779,22 @@ class AgentModeController(
             put("display_id", displayId)
             put("width", state.width)
             put("height", state.height)
+            val (imageWidth, imageHeight) = agentModeScreenshotSize(state.width, state.height, AgentModeCaptureMaxEdge)
+            put("image_width", imageWidth)
+            put("image_height", imageHeight)
+            put("coordinate_space", AgentModeCoordinateSpace)
             put("screenshot_path", workspacePath)
             put("preview_path", previewPath)
-            state.cursorX?.let { put("cursor_x", it) }
-            state.cursorY?.let { put("cursor_y", it) }
+            // cursor_x/cursor_y are display pixels (kept for the UI); cursor_norm_* are the 0..1000 values to reuse.
+            state.cursorX?.let {
+                put("cursor_x", it)
+                put("cursor_norm_x", normalizeAgentModePixel(it, state.width))
+            }
+            state.cursorY?.let {
+                put("cursor_y", it)
+                put("cursor_norm_y", normalizeAgentModePixel(it, state.height))
+            }
+            extras?.keys()?.forEach { key -> put(key, extras.get(key)) }
             put("screenshot_mime_type", AgentModeCaptureMimeType)
             put("screenshot_base64", Base64.encodeToString(bytes, Base64.NO_WRAP))
             put("stdout", "Captured Agent Mode screenshot: $workspacePath")
@@ -1325,11 +1351,31 @@ class AgentModeController(
     }
 
 
-    private fun normalizedX(value: Double): Int? =
-        value.takeIf { !it.isNaN() }?.let { (it.coerceIn(0.0, 1000.0) * _displayState.value.width / 1000.0).toInt() }
+    private sealed interface ResolvedPoint {
+        data class Valid(val x: Int, val y: Int) : ResolvedPoint
+        data class Invalid(val message: String) : ResolvedPoint
+    }
 
-    private fun normalizedY(value: Double): Int? =
-        value.takeIf { !it.isNaN() }?.let { (it.coerceIn(0.0, 1000.0) * _displayState.value.height / 1000.0).toInt() }
+    private fun resolvePoint(arguments: JSONObject, xKey: String, yKey: String): ResolvedPoint {
+        val state = _displayState.value
+        val x = resolveAgentModeCoordinate(xKey, arguments.optDouble(xKey, Double.NaN), state.width)
+        val y = resolveAgentModeCoordinate(yKey, arguments.optDouble(yKey, Double.NaN), state.height)
+        return when {
+            x is AgentModeCoordinateResult.OutOfRange -> ResolvedPoint.Invalid(x.message)
+            y is AgentModeCoordinateResult.OutOfRange -> ResolvedPoint.Invalid(y.message)
+            x is AgentModeCoordinateResult.Valid && y is AgentModeCoordinateResult.Valid ->
+                ResolvedPoint.Valid(x.pixel, y.pixel)
+            else -> ResolvedPoint.Invalid(
+                "Both '$xKey' and '$yKey' are required, using normalized 0..$AgentModeNormalizedCoordinateMax coordinates.",
+            )
+        }
+    }
+
+    /** Best-effort focus diagnostics for the display; never fails the action. */
+    private suspend fun focusExtras(settings: AppSettings, displayId: Int): JSONObject {
+        val raw = runCatching { requireAgentModeService(settings).focusedWindowJson(displayId) }.getOrNull()
+        return runCatching { JSONObject(raw.orEmpty()) }.getOrElse { JSONObject() }
+    }
 
     private fun invalidArguments(message: String): String =
         JSONObject().apply {

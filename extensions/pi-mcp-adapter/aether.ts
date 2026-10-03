@@ -575,10 +575,10 @@ function serverCategory(api: AetherExtensionAPI, name: string, entry: AetherJson
     ...commonSettings(api, `server:${name}:`, entry),
   ];
   const sections: AetherSettingsSection[] = [
-    { id: "configuration", title: "Конфигурация", settings },
+    { id: "configuration", title: "Configuration", settings },
     {
       id: "actions",
-      title: "Управление",
+      title: "Manage",
       settings: [
         text(`server:${name}:renameTo`, "Rename to", "Type the new name, then tap Rename server.", value(`server:${name}:renameTo`, "")),
         button(`server:${name}:rename`, "Rename server", "mcp:rename-server", { serverName: name }, "Rename this server and keep its configuration.", "neutral"),
@@ -612,13 +612,13 @@ function newServerSection(api: AetherExtensionAPI): AetherSettingsSection {
   const empty: AetherJsonObject = {};
   return {
     id: "new-server",
-    title: "Новый MCP-сервер",
+    title: "New MCP server",
     settings: [
       text("new_name", "Name", "Unique server name used as the config key and default tool prefix.", value("new_name", "")),
       select("new_transport", "Transport", "All transports supported by the MCP adapter.", transport, TRANSPORT_OPTIONS),
       ...transportSettings(api, "new_", transport, empty),
       ...commonSettings(api, "new_", empty),
-      button("add-server", "Добавить MCP-сервер", "mcp:add-server", {}, "Write this server to the Pi MCP config, then reload to connect.", "primary"),
+      button("add-server", "Add MCP server", "mcp:add-server", {}, "Write this server to the Pi MCP config, then reload to connect.", "primary"),
     ],
   };
 }
@@ -636,8 +636,8 @@ function buildMainSections(api: AetherExtensionAPI, servers: Record<string, Aeth
         {
           id: "no-servers-state",
           type: "empty-state",
-          title: "Нет MCP-серверов",
-          description: "Добавьте HTTP- или stdio-серверы для расширения возможностей.",
+          title: "No MCP servers",
+          description: "Add HTTP or stdio servers to extend capabilities.",
           buttonLabel: "Add server",
           category: "new-server",
         },
@@ -647,7 +647,7 @@ function buildMainSections(api: AetherExtensionAPI, servers: Record<string, Aeth
     // Runtime status summary at the top
     sections.push({
       id: "runtime",
-      title: "Среда выполнения MCP",
+      title: "MCP Runtime",
       description: `Pi MCP bridge is ${readyText}. Config: ${snapshot.configPath}`,
       settings: [
         label("runtime-summary", `${serverCount} server${serverCount === 1 ? "" : "s"} configured · ${snapshot.connectedCount} connected · ${snapshot.totalTools} tools`, `Pi MCP bridge is ${readyText}. Config file: ${snapshot.configPath}`),
@@ -733,8 +733,8 @@ function buildMainSections(api: AetherExtensionAPI, servers: Record<string, Aeth
 
     sections.push({
       id: "servers",
-      title: "Настроенные серверы",
-      description: "Нажмите на сервер, чтобы просмотреть сведения, инструменты или подключиться заново.",
+      title: "Configured Servers",
+      description: "Tap any server to view details, inspect available tools, or reconnect.",
       settings: serverCards,
     });
   }
@@ -1196,8 +1196,8 @@ export const activateAether = async (aether: AetherExtensionAPI) => {
 
     const definition: AetherSettingsDefinition = {
       id: PAGE_ID,
-      title: "MCP-серверы",
-      subtitle: "Управляйте MCP-серверами, проверяйте настройки транспорта и оставляйте только нужные подключения активными.",
+      title: "MCP Servers",
+      subtitle: "Manage MCP servers, inspect each transport config, and keep only the connections you want active.",
       icon: "auto",
       order: 30,
       trailingIcon: "add",
@@ -1206,7 +1206,7 @@ export const activateAether = async (aether: AetherExtensionAPI) => {
       categories: [
         {
           id: "new-server",
-          title: "Добавить MCP-сервер",
+          title: "Add MCP server",
           subtitle: `Writes to ${snapshot.configPath}`,
           icon: "auto",
           order: 10,
@@ -1246,7 +1246,7 @@ export const activateAether = async (aether: AetherExtensionAPI) => {
           {
             id: "general",
             title: "MCP",
-            subtitle: "Среда выполнения и OAuth",
+            subtitle: "Runtime and OAuth",
             icon: "auto",
             order: 1,
             sections: definition.sections ?? [],

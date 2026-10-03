@@ -3,6 +3,34 @@ import AetherShared
 @testable import Aether
 
 final class AetherRuntimeTests: XCTestCase {
+    func testProviderModelRefreshPreservesDisabledModelsAndRemovesStaleModels() {
+        var draft = NativeProviderDraft(
+            id: "test", providerId: "openai", name: "OpenAI", piProviderId: "openai",
+            authMethod: "api_key", apiKey: "", oauthCredentialJson: "", environment: [],
+            baseURL: "", modelIDs: " custom \ncustom\n", userAgent: "", headers: [],
+            compatibilityMode: false, cachedModels: ["disabled", "removed"],
+            enabledModels: ["removed", "custom"], isEnabled: true, createdAt: 0
+        )
+        draft.applyFetchedModels([" disabled ", "new", "new", ""])
+        XCTAssertEqual(draft.cachedModels, ["disabled", "new"])
+        XCTAssertEqual(draft.manualModels, ["custom"])
+        XCTAssertEqual(draft.enabledModels, ["custom", "new"])
+        draft.enabledModels.remove("new")
+        draft.applyFetchedModels(["disabled", "new"])
+        XCTAssertEqual(draft.enabledModels, ["custom"])
+        draft.applyFetchedModels([], error: "Network unavailable")
+        XCTAssertEqual(draft.allModels, ["custom", "disabled", "new"])
+        XCTAssertEqual(draft.enabledModels, ["custom"])
+        draft.applyFetchedModels([])
+        XCTAssertEqual(draft.allModels, ["custom"])
+        XCTAssertEqual(draft.enabledModels, ["custom"])
+    }
+
+    func testProviderIDGenerationAvoidsExistingConfigurations() {
+        XCTAssertEqual(NativeProviderDraft.availableProviderID("openai", existing: []), "openai")
+        XCTAssertEqual(NativeProviderDraft.availableProviderID("openai", existing: ["openai", "openai_2"]), "openai_3")
+    }
+
     private let host = AetherRuntimeHost.shared
 
     override func setUpWithError() throws {
@@ -367,6 +395,41 @@ final class AetherRuntimeTests: XCTestCase {
 
         XCTAssertEqual(result.exitCode, 0, result.stderr)
         XCTAssertLessThan(Date().timeIntervalSince(startedAt), 2.5)
+    }
+
+    func testUnixSocketBindAndConnect() throws {
+        try initializeRuntime()
+        let script = #"""
+        const net = require('node:net');
+        const fs = require('node:fs');
+        const { spawn } = require('node:child_process');
+        const path = '/tmp/aether-socket-regression-' + process.pid + '-' + Date.now();
+        const timer = setTimeout(() => process.exit(2), 15000);
+        const server = net.createServer(socket => socket.end('socket-ok'));
+        server.on('error', error => { console.error(error); process.exit(1); });
+        server.listen(path, () => {
+            // iSH connect waits for accept, so the peers need separate guest threads.
+            const client = spawn(process.execPath, ['-e', `
+                const socket = require('node:net').createConnection(process.argv[1]);
+                let output = '';
+                socket.on('error', error => { console.error(error); process.exit(1); });
+                socket.on('data', data => output += data);
+                socket.on('end', () => {
+                    console.log(output);
+                    process.exitCode = output === 'socket-ok' ? 0 : 3;
+                });
+            `, path], { stdio: 'inherit' });
+            client.on('error', error => { console.error(error); process.exit(1); });
+            client.on('exit', code => server.close(() => {
+                clearTimeout(timer);
+                try { fs.unlinkSync(path); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+                process.exitCode = code === 0 ? 0 : 3;
+            }));
+        });
+        """#
+        let result = try run("/usr/bin/node", arguments: ["-e", script], timeout: 60)
+        XCTAssertEqual(result.exitCode, 0, result.stderr)
+        XCTAssertTrue(result.stdout.contains("socket-ok"), result.stdout)
     }
 
     func testAlpineNodeBridgeTerminalCancellationAndStdioMcp() throws {

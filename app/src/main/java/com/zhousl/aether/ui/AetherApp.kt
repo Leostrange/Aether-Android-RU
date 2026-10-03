@@ -300,8 +300,18 @@ fun AetherApp(
         }
     }
 
+    val showcaseStates by viewModel.showcaseStates.collectAsStateWithLifecycle()
+    val showcaseState = showcaseStates[uiState.currentSessionId]
+    val showcaseControls = if (com.zhousl.aether.BuildConfig.SHOWCASE_MODE &&
+        com.zhousl.aether.data.ShowcaseCatalog.isSession(uiState.currentSessionId)) ShowcaseControls(
+        playing = showcaseState?.playing == true, paused = showcaseState?.paused == true,
+        speed = showcaseState?.speed ?: 1f,
+        onReplay = { viewModel.replayShowcase() }, onPause = viewModel::pauseShowcase,
+        onRestore = { viewModel.replayShowcase(restoreOnly = true) }, onSpeed = viewModel::setShowcaseSpeed,
+    ) else null
     CompositionLocalProvider(
         LocalAetherExtensionUiController provides extensionController,
+        LocalShowcaseControls provides showcaseControls,
     ) {
         AetherTheme(
             themeMode = uiState.settings.themeMode,
@@ -1213,7 +1223,7 @@ private fun AetherAppContent(
             }
         }
 
-        if (uiState.isStartupRouteResolved && !uiState.settings.privacyPolicyAccepted) {
+        if (uiState.isStartupRouteResolved && !uiState.settings.privacyPolicyAccepted && !com.zhousl.aether.BuildConfig.SHOWCASE_MODE) {
             PrivacyPolicyConsentDialog(
                 onOpenPolicy = { openPrivacyPolicy(context) },
                 onAccept = viewModel::acceptPrivacyPolicy,

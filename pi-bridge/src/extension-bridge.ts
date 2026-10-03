@@ -21,9 +21,9 @@ import { reserveProtocolStdout, writeProtocolFrame } from "./protocol-output.js"
 reserveProtocolStdout();
 
 const BRIDGE_VERSION = "2.0.0-alpha.0";
-const PI_AI_VERSION = "0.84.1";
-const PI_AGENT_CORE_VERSION = "0.84.1";
-const PI_CODING_AGENT_VERSION = "0.84.1";
+const PI_AI_VERSION = "0.85.1";
+const PI_AGENT_CORE_VERSION = "0.85.1";
+const PI_CODING_AGENT_VERSION = "0.85.1";
 
 type JsonObject = Record<string, unknown>;
 

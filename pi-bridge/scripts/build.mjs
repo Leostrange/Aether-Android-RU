@@ -1,6 +1,11 @@
-import { readFile } from "node:fs/promises";
+import { access, copyFile, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
+
+const photonWasmCandidates = [
+  "node_modules/@silvia-odwyer/photon-node/photon_rs_bg.wasm",
+  "node_modules/@earendil-works/pi-coding-agent/node_modules/@silvia-odwyer/photon-node/photon_rs_bg.wasm",
+];
 
 const deduplicateDependencies = {
   name: "deduplicate-dependencies",
@@ -21,8 +26,8 @@ const nodeBundleSourcePatches = {
       { filter: /@earendil-works\/pi-coding-agent\/dist\/core\/extensions\/loader\.js$/ },
       async ({ path }) => {
         const source = await readFile(path, "utf8");
-        const original = "...(isBunBinary\n            ? { virtualModules: VIRTUAL_MODULES, tryNative: false }";
-        const replacement = "...(true\n            ? { virtualModules: VIRTUAL_MODULES, tryNative: false }";
+        const original = "const usesEmbeddedModules = isBunBinary || isNodeSeaBinary || isBundledNode;";
+        const replacement = "const usesEmbeddedModules = true;";
         if (!source.includes(original)) {
           throw new Error("Pi extension loader structure changed; update the Node bundle patch.");
         }
@@ -59,7 +64,7 @@ const commonOptions = {
   minify: true,
   legalComments: "none",
   banner: {
-    js: "import { createRequire as __aetherCreateRequire } from 'node:module';const require = __aetherCreateRequire(import.meta.url);",
+    js: "import { createRequire as __aetherCreateRequire } from 'node:module';import { dirname as __aetherDirname } from 'node:path';import { fileURLToPath as __aetherFileURLToPath } from 'node:url';const require = __aetherCreateRequire(import.meta.url);const __dirname = __aetherDirname(__aetherFileURLToPath(import.meta.url));",
   },
 };
 
@@ -75,4 +80,24 @@ await Promise.all([
     entryPoints: ["src/extension-bridge.ts"],
     outfile: "dist/extension-bridge.mjs",
   }),
+  build({
+    ...commonOptions,
+    entryPoints: ["node_modules/@earendil-works/pi-coding-agent/dist/utils/image-resize-worker.js"],
+    outfile: "dist/image-resize-worker.js",
+  }),
 ]);
+
+let photonWasmSource;
+for (const candidate of photonWasmCandidates) {
+  try {
+    await access(candidate);
+    photonWasmSource = candidate;
+    break;
+  } catch {
+    // Try the alternate npm layout when Photon is hoisted or nested.
+  }
+}
+if (!photonWasmSource) {
+  throw new Error("Unable to locate photon_rs_bg.wasm in the installed Pi dependencies.");
+}
+await copyFile(photonWasmSource, "dist/photon_rs_bg.wasm");

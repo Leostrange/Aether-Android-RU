@@ -14,9 +14,10 @@ interface IAetherAgentModeService {
     void tap(int displayId, int x, int y) = 8;
     void swipe(int displayId, int x1, int y1, int x2, int y2, int durationMs) = 9;
     void key(int displayId, String keyCode) = 10;
-    void text(int displayId, String text) = 11;
+    String text(int displayId, String text) = 11;
     void captureImageToFd(int displayId, in ParcelFileDescriptor output, int maxEdge, int quality) = 12;
     String listDisplaysJson() = 13;
     String listInstalledAppsJson() = 14;
+    String focusedWindowJson(int displayId) = 15;
     void destroy() = 16777114;
 }

@@ -129,7 +129,13 @@ class IosAlpineRuntime(
         val processId = host.startProcess(
             executable = spec.executable,
             arguments = spec.arguments,
-            environment = spec.environment,
+            environment = buildMap {
+                // The Alpine rootfs is a private disposable sandbox. Alpine's PEP 668
+                // marker must not prevent pip or uv from installing user packages.
+                put("PIP_BREAK_SYSTEM_PACKAGES", "1")
+                put("UV_BREAK_SYSTEM_PACKAGES", "1")
+                putAll(spec.environment)
+            },
             workingDirectory = spec.workingDirectory,
             redirectErrorStream = spec.redirectErrorStream,
             interactiveTerminal = spec.interactiveTerminal,

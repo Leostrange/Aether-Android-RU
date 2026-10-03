@@ -4,6 +4,124 @@ import Foundation
 import SwiftUI
 import UIKit
 
+private let nativeSettingsRussianTranslations: [String: String] = [
+    "API key": "API-ключ",
+    "About": "О приложении",
+    "Account authorized.": "Аккаунт авторизован.",
+    "Add": "Добавить",
+    "Add Provider": "Добавить поставщика",
+    "Add Skill": "Добавить навык",
+    "Advanced settings": "Расширенные настройки",
+    "Agent Skills": "Навыки агента",
+    "Allowed tools": "Разрешенные инструменты",
+    "Any": "Любой",
+    "Authentication": "Аутентификация",
+    "Author": "Автор",
+    "Automatic": "Автоматический",
+    "Average turn": "Средний оборот",
+    "Back": "Назад",
+    "Base URL": "База URL",
+    "Browser login": "Вход в браузер",
+    "Cancel": "Отмена",
+    "Choose Folder": "Выберите папку",
+    "Choose Zip": "Выбрать ZIP-архив",
+    "Close": "Закрыть",
+    "Compatibility": "Совместимость",
+    "Compatibility mode": "Режим совместимости",
+    "Configure credentials": "Настройка учетных данных",
+    "Connect your subscription account to continue.": "Подключите свою учетную запись подписки, чтобы продолжить.",
+    "Connection": "Связь",
+    "Continue": "Продолжать",
+    "Copy": "Копировать",
+    "Custom instructions": "Пользовательские инструкции",
+    "Dark": "Тёмная",
+    "Default Models": "Модели по умолчанию",
+    "Delete": "Удалить",
+    "Dependencies": "Зависимости",
+    "Developer": "Разработчик",
+    "Developer message fallbacks": "Резервные сообщения разработчика",
+    "Device code login": "Вход по коду устройства",
+    "Disconnect": "Отключить",
+    "Discover": "Обнаружить",
+    "Done": "Готово",
+    "Downloads": "Загрузки",
+    "Edit": "Изменить",
+    "Edit Provider": "Изменить поставщика",
+    "Enabled": "Включено",
+    "Environment": "Среда",
+    "Environment variables": "Переменные среды",
+    "Export": "Экспорт",
+    "Export app data": "Экспортировать данные приложения",
+    "Export logs": "Экспорт журналов",
+    "Extensions": "Расширения",
+    "Failed": "Неуспешный",
+    "Fetch models": "Получить модели",
+    "Files": "Файлы Alpine",
+    "General": "Основные",
+    "General Settings": "Общие настройки",
+    "Import app data": "Импортировать данные приложения",
+    "Initialize": "Инициализировать",
+    "Input": "Вход",
+    "Install": "Установить",
+    "Install from URL": "Установить из URL",
+    "Installed": "Установлено",
+    "Installing...": "Установка...",
+    "Keep tasks running in background": "Запускайте задачи в фоновом режиме",
+    "Language": "Язык",
+    "Largest turn": "Самый большой ход",
+    "License": "Лицензия",
+    "Light": "Светлая",
+    "Model Providers": "Поставщики моделей",
+    "Models": "Модели",
+    "Multitasking": "Многозадачность",
+    "Name": "Имя",
+    "Open": "Открыть",
+    "Output": "Выход",
+    "Overview": "Обзор",
+    "Path": "Путь",
+    "Peak day": "Пиковый день",
+    "Personalization": "Персонализация",
+    "Privacy": "Конфиденциальность",
+    "Privacy Policy": "Политика конфиденциальности",
+    "Provider": "Поставщик",
+    "Provider ID": "Идентификатор поставщика",
+    "Provider ID is required.": "Требуется идентификатор поставщика.",
+    "Published": "Опубликовано",
+    "Ready": "Готово",
+    "Reasoning": "Рассуждение",
+    "Recent 7 days": "Последние 7 дней",
+    "Reconnect": "Восстановить соединение",
+    "Recorded turns": "Записанные ходы",
+    "Refresh": "Обновить",
+    "Reliability": "Надежность",
+    "Remove": "Удалить",
+    "Repository": "Репозиторий",
+    "Reset": "Сбросить",
+    "Retry": "Повторить попытку",
+    "Runtime": "Среда выполнения",
+    "Save": "Сохранить",
+    "Search providers": "Поиск поставщиков",
+    "Sessions": "Сессии",
+    "Settings": "Настройки",
+    "Setup required": "Требуется настройка",
+    "Size": "Размер",
+    "Source": "Источник",
+    "Subscription": "Подписка",
+    "System": "Системная",
+    "Terminal": "Терминал",
+    "Theme": "Тема",
+    "This provider ID is already in use.": "Этот идентификатор поставщика уже используется.",
+    "Token mix": "Микс токенов",
+    "Total tokens": "Всего токенов",
+    "Unavailable": "Недоступно",
+    "Update": "Обновить",
+    "Use lowercase letters, numbers, and underscores only.": "Используйте только строчные буквы, цифры и символы подчеркивания.",
+    "Value": "Значение",
+    "Version": "Версия",
+    "Website": "Веб-сайт",
+    "Workspace": "Рабочая область",
+]
+
 private let nativeSettingsPersianTranslations: [String: String] = [
     "API key": "کلید API",
     "About": "درباره",
@@ -257,6 +375,7 @@ final class NativeSettingsModel: NSObject, ObservableObject, @preconcurrency Ios
         switch language {
         case "zh-CN": chinese
         case "fa": persian ?? nativeSettingsPersianTranslations[english] ?? english
+        case "ru": nativeSettingsRussianTranslations[english] ?? english
         default: english
         }
     }
@@ -440,6 +559,7 @@ struct NativeSettingsView: View {
         switch value {
         case "zh-CN": "简体中文"
         case "fa": "فارسی"
+        case "ru": "Русский"
         default: "English"
         }
     }
@@ -463,6 +583,7 @@ private struct NativeGeneralSettingsView: View {
                     Text("English").tag("en")
                     Text("简体中文").tag("zh-CN")
                     Text("فارسی").tag("fa")
+                    Text("Русский").tag("ru")
                 }
                 .accessibilityLabel("\(languageLabel), Language")
             } header: {
@@ -496,7 +617,7 @@ private struct NativeGeneralSettingsView: View {
     }
 
     private var languageLabel: String {
-        switch model.language { case "zh-CN": "简体中文"; case "fa": "فارسی"; default: "English" }
+        switch model.language { case "zh-CN": "简体中文"; case "fa": "فارسی"; case "ru": "Русский"; default: "English" }
     }
 
     private var themeLabel: String {
@@ -718,13 +839,13 @@ private struct NativeModelSelector: View {
     }
 }
 
-private struct NativeProviderPair: Identifiable {
+struct NativeProviderPair: Identifiable {
     var id = UUID()
     var name: String
     var value: String
 }
 
-private struct NativeProviderDraft {
+struct NativeProviderDraft {
     var id: String
     var providerId: String
     var name: String
@@ -742,6 +863,33 @@ private struct NativeProviderDraft {
     var enabledModels: Set<String>
     var isEnabled: Bool
     var createdAt: Int64
+
+    var manualModels: [String] {
+        Array(Set(modelIDs.split(whereSeparator: \.isNewline).map {
+            $0.trimmingCharacters(in: .whitespacesAndNewlines)
+        }.filter { !$0.isEmpty })).sorted()
+    }
+
+    var allModels: [String] { Array(Set(cachedModels + manualModels)).sorted() }
+
+    mutating func applyFetchedModels(_ models: [String], error: String = "") {
+        guard error.isEmpty || !models.isEmpty else { return }
+        let previous = Set(allModels)
+        cachedModels = Array(Set(models.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty })).sorted()
+        enabledModels.formUnion(Set(cachedModels).subtracting(previous))
+        enabledModels.formIntersection(allModels)
+    }
+
+    static func availableProviderID(_ base: String, existing: Set<String>) -> String {
+        var candidate = base
+        var suffix = 2
+        while existing.contains(candidate) {
+            candidate = "\(base)_\(suffix)"
+            suffix += 1
+        }
+        return candidate
+    }
 }
 
 private struct NativeProviderEditor: View {
@@ -756,14 +904,18 @@ private struct NativeProviderEditor: View {
     @State private var showAdvanced = false
     @State private var waitingForWizardModels = false
     @State private var wizardAuthMethod = "api_key"
+    @State private var fetchRequestID = ""
+    @State private var fetchError = ""
+    @State private var authSessionID = ""
+    @State private var appliedCredential = ""
+    @State private var presentedPromptID = ""
 
     init(model: NativeSettingsModel, provider: [String: Any]?) {
         self.model = model
         original = provider
         let now = Int64(Date().timeIntervalSince1970 * 1_000)
         let defaultDefinition = model.providerCatalog.first { model.string($0, "id") == "openai" } ?? [:]
-        let modelIDs = provider?["manualModelIds"] as? [String]
-            ?? [model.string(defaultDefinition, "defaultModelId")].filter { !$0.isEmpty }
+        let modelIDs = provider?["manualModelIds"] as? [String] ?? []
         _draft = State(initialValue: NativeProviderDraft(
             id: provider?["id"] as? String ?? UUID().uuidString.lowercased(),
             providerId: provider?["providerId"] as? String ?? "openai",
@@ -798,13 +950,14 @@ private struct NativeProviderEditor: View {
                 ToolbarItem(placement: .confirmationAction) { Button(model.text("Save", "保存"), action: save).disabled(!isValid) }
             }
         }
-        .onReceive(model.$snapshot) { _ in
-            applyAuthResult()
-            if waitingForWizardModels && !isFetching {
-                waitingForWizardModels = false
-                navigateWizard(to: 3)
-            }
+        .onReceive(model.$snapshot.receive(on: RunLoop.main)) { snapshot in applyResults(snapshot) }
+        .onChange(of: draft.authMethod) { _, _ in clearAuth() }
+        .onChange(of: draft.modelIDs) { old, _ in
+            let previous = Set(old.split(whereSeparator: \.isNewline).map { $0.trimmingCharacters(in: .whitespaces) })
+            draft.enabledModels.formUnion(Set(manualModels).subtracting(previous))
+            draft.enabledModels.formIntersection(allModels)
         }
+        .onDisappear { clearAuth() }
         .sheet(isPresented: $showingPrompt) { NativeProviderAuthPromptView(model: model) }
     }
 
@@ -827,8 +980,7 @@ private struct NativeProviderEditor: View {
                     ForEach(authMethods, id: \.self) { method in Text(authLabel(method)).tag(method) }
                 }
                 if draft.authMethod == "api_key" {
-                    SecureField(model.text("API key", "API 密钥"), text: $draft.apiKey)
-                    if definitionBool("supportsInteractiveApiKey") { authenticateButton }
+                    apiKeyContent
                 } else if draft.authMethod == "oauth" {
                     Text("\(model.string(definition, "displayName")) OAuth")
                         .font(.caption).foregroundStyle(.secondary)
@@ -839,7 +991,7 @@ private struct NativeProviderEditor: View {
                     if !draft.oauthCredentialJson.isEmpty {
                         wizardActionRow("trash", model.text("Disconnect", "断开连接"), destructive: true) {
                             draft.oauthCredentialJson = ""
-                            model.perform("provider_clear_auth")
+                            clearAuth()
                         }
                     }
                 } else {
@@ -862,12 +1014,13 @@ private struct NativeProviderEditor: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(model.text("Manual model IDs, one per line", "手动模型 ID，每行一个")).font(.caption).foregroundStyle(.secondary)
                     TextEditor(text: $draft.modelIDs).frame(minHeight: 80)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
                 }
                 Button { fetchModels() } label: {
                     if isFetching { ProgressView() } else { Label(model.text("Fetch models", "获取模型"), systemImage: "arrow.clockwise") }
-                }.disabled(isFetching)
-                if !model.string(model.snapshot, "providerError").isEmpty {
-                    Text(model.string(model.snapshot, "providerError")).foregroundStyle(.red).font(.caption)
+                }.disabled(isFetching || !connectionIsValid)
+                if !fetchError.isEmpty {
+                    Text(fetchError).foregroundStyle(.red).font(.caption)
                 }
                 ForEach(allModels, id: \.self) { modelID in
                     Toggle(modelID, isOn: Binding(
@@ -880,13 +1033,14 @@ private struct NativeProviderEditor: View {
     }
 
     private var wizard: some View {
-        TabView(selection: $wizardStage) {
-            authenticationChoices.tag(0)
-            providerChoices.tag(1)
-            credentialsStep.tag(2)
-            modelsStep.tag(3)
+        Group {
+            switch wizardStage {
+            case 0: authenticationChoices
+            case 1: providerChoices
+            case 2: credentialsStep
+            default: modelsStep
+            }
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
         .background(Color(uiColor: .systemGroupedBackground).ignoresSafeArea())
     }
 
@@ -922,6 +1076,10 @@ private struct NativeProviderEditor: View {
                         navigateWizard(to: 2)
                     }
                 }
+                if filteredProviders.isEmpty {
+                    Text(model.text("No providers found", "未找到提供商", "ارائه‌دهنده‌ای یافت نشد"))
+                        .foregroundStyle(.secondary)
+                }
             } header: { wizardHeader(1) }
             Section {
                 Button { navigateWizard(to: 0) } label: { Label(model.text("Back", "返回"), systemImage: "chevron.left") }
@@ -933,17 +1091,18 @@ private struct NativeProviderEditor: View {
     private var credentialsStep: some View {
         List {
             Section {
+                Text(model.string(definition, "displayName")).font(.headline)
                 if draft.authMethod == "api_key" {
-                    SecureField(model.text("API key", "API 密钥"), text: $draft.apiKey)
-                    if definitionBool("supportsInteractiveApiKey") { authenticateButton }
+                    apiKeyContent
                     authStatus
                 } else if draft.authMethod == "oauth" {
                     oauthContent
                 } else {
                     Text(model.text("Credentials are read from the provider environment.", "凭证从提供商环境变量读取。"))
                         .foregroundStyle(.secondary)
+                    pairEditor(model.text("Environment variables", "环境变量"), pairs: $draft.environment)
                 }
-            } header: { wizardHeader(2) } footer: { Text(authenticationGuidance) }
+            } header: { wizardHeader(2) }
             if definitionBool("requiresBaseUrl") || definitionBool("supportsCustomBaseUrl") || !definitionBool("isBuiltIn") {
                 Section(model.text("Connection", "连接")) {
                     TextField(model.text("Base URL", "基础 URL"), text: $draft.baseURL)
@@ -955,7 +1114,8 @@ private struct NativeProviderEditor: View {
             }
             Section {
                 HStack {
-                    Button { model.perform("provider_clear_auth"); navigateWizard(to: 1) } label: { Text(model.text("Back", "返回")) }
+                    Button { clearAuth(); waitingForWizardModels = false; fetchRequestID = ""; navigateWizard(to: 1) } label: { Text(model.text("Back", "返回")) }
+                        .buttonStyle(.borderless)
                     Spacer()
                     Button {
                         waitingForWizardModels = true
@@ -964,7 +1124,7 @@ private struct NativeProviderEditor: View {
                         if isFetching { ProgressView() } else { Text(model.text("Continue", "继续")) }
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(!authenticationIsValid || isFetching || waitingForWizardModels)
+                    .disabled(!connectionIsValid || isFetching || waitingForWizardModels || model.bool(relevantAuth, "isRunning"))
                 }
             }
         }
@@ -977,6 +1137,7 @@ private struct NativeProviderEditor: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(model.text("Manual model IDs, one per line", "手动模型 ID，每行一个")).font(.caption).foregroundStyle(.secondary)
                     TextEditor(text: $draft.modelIDs).frame(minHeight: 80)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
                 }
             } header: { wizardHeader(3) } footer: {
                 Text(model.text(
@@ -988,7 +1149,10 @@ private struct NativeProviderEditor: View {
             Section(model.text("Available Models", "可用模型")) {
                 Button { fetchModels() } label: {
                     if isFetching { ProgressView() } else { Label(model.text("Fetch models", "获取模型"), systemImage: "arrow.clockwise") }
-                }.disabled(isFetching)
+                }.disabled(isFetching || !connectionIsValid)
+                if !fetchError.isEmpty {
+                    Text(fetchError).foregroundStyle(.red).font(.caption)
+                }
                 if allModels.isEmpty {
                     Text(model.text("No models were returned. Add a model ID above or try again.", "未获取到模型。请在上方添加模型 ID，或重试。"))
                         .font(.callout).foregroundStyle(.secondary)
@@ -1004,8 +1168,10 @@ private struct NativeProviderEditor: View {
                 DisclosureGroup(model.text("Advanced settings", "高级设置"), isExpanded: $showAdvanced) {
                     TextField(model.text("Name", "名称"), text: $draft.name)
                     TextField(model.text("Provider ID", "提供商 ID"), text: $draft.providerId)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
                     if !providerIDError.isEmpty { Text(providerIDError).font(.caption).foregroundStyle(.red) }
                     TextField(model.text("Base URL", "基础 URL"), text: $draft.baseURL)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
                     TextField(model.text("User agent", "User Agent"), text: $draft.userAgent)
                     pairEditor(model.text("Environment variables", "环境变量"), pairs: $draft.environment)
                     pairEditor(model.text("Custom headers", "自定义请求头"), pairs: $draft.headers)
@@ -1014,6 +1180,7 @@ private struct NativeProviderEditor: View {
             Section {
                 HStack {
                     Button { navigateWizard(to: 2) } label: { Text(model.text("Back", "返回")) }
+                        .buttonStyle(.borderless)
                     Spacer()
                     Button(model.text("Save", "保存"), action: save).buttonStyle(.borderedProminent).disabled(!isValid)
                 }
@@ -1025,8 +1192,8 @@ private struct NativeProviderEditor: View {
     private var filteredProviders: [[String: Any]] {
         let query = providerSearch.trimmingCharacters(in: .whitespacesAndNewlines)
         return model.providerCatalog.filter { item in
-            let supported = draft.authMethod == "oauth" ? model.bool(item, "supportsOAuth")
-                : draft.authMethod == "ambient" ? model.bool(item, "supportsAmbientAuth")
+            let supported = wizardAuthMethod == "oauth" ? model.bool(item, "supportsOAuth")
+                : wizardAuthMethod == "ambient" ? model.bool(item, "supportsAmbientAuth")
                 : model.bool(item, "supportsInteractiveApiKey")
             return supported && (query.isEmpty || model.string(item, "displayName").localizedCaseInsensitiveContains(query)
                 || model.string(item, "id").localizedCaseInsensitiveContains(query)
@@ -1107,9 +1274,13 @@ private struct NativeProviderEditor: View {
         if definitionBool("supportsAmbientAuth") { methods.append("ambient") }
         return methods.isEmpty ? ["api_key"] : methods
     }
-    private var manualModels: [String] { draft.modelIDs.split(whereSeparator: \.isNewline).map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty } }
-    private var allModels: [String] { Array(Set(draft.cachedModels + manualModels)).sorted() }
-    private var isFetching: Bool { model.string(model.snapshot, "providerOperation") == "fetch_models:\(draft.id)" }
+    private var manualModels: [String] { draft.manualModels }
+    private var allModels: [String] { draft.allModels }
+    private var isFetching: Bool { !fetchRequestID.isEmpty }
+    private var connectionIsValid: Bool {
+        authenticationIsValid && (!(definitionBool("requiresBaseUrl") || !definitionBool("isBuiltIn")) ||
+            !draft.baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
     private var isValid: Bool {
         let providerID = draft.providerId.trimmingCharacters(in: .whitespacesAndNewlines)
         let validProviderID = providerID.range(of: "^[a-z0-9_]+$", options: .regularExpression) != nil
@@ -1119,7 +1290,7 @@ private struct NativeProviderEditor: View {
         return !draft.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         validProviderID && !duplicateProviderID &&
         (!definitionBool("requiresBaseUrl") || !draft.baseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) &&
-        authenticationIsValid
+        connectionIsValid && !isFetching && !model.bool(relevantAuth, "isRunning")
     }
     private var authenticationIsValid: Bool {
         if draft.authMethod == "oauth" { return definitionBool("supportsOAuth") && !draft.oauthCredentialJson.isEmpty }
@@ -1140,17 +1311,10 @@ private struct NativeProviderEditor: View {
     private func definitionBool(_ key: String) -> Bool { model.bool(definition, key) }
     private func authLabel(_ method: String) -> String { method == "oauth" ? "OAuth" : method == "ambient" ? model.text("Environment", "环境") : model.text("API key", "API 密钥") }
 
-    private var authenticationGuidance: String {
-        switch draft.authMethod {
-        case "oauth": model.text("Choose a login method and finish authorization.", "选择登录方式并完成授权。")
-        case "ambient": model.text("Configure credentials provided by the runtime environment.", "配置运行环境提供的凭证。")
-        default: model.text("Enter an API key or use the provider's credential flow.", "输入 API 密钥，或使用提供商的凭证流程。")
-        }
-    }
-
     private var relevantAuth: [String: Any] {
         let auth = model.providerAuth
-        guard model.string(auth, "providerId") == draft.piProviderId,
+        guard !authSessionID.isEmpty, model.string(auth, "sessionId") == authSessionID,
+              model.string(auth, "providerId") == draft.piProviderId,
               model.string(auth, "authMethod") == draft.authMethod else { return [:] }
         return auth
     }
@@ -1195,14 +1359,14 @@ private struct NativeProviderEditor: View {
             if !draft.oauthCredentialJson.isEmpty {
                 wizardActionRow("trash", model.text("Disconnect", "断开连接"), destructive: true) {
                     draft.oauthCredentialJson = ""
-                    model.perform("provider_clear_auth")
+                    clearAuth()
                 }
             }
         }
     }
 
     @ViewBuilder private var oauthDeviceCodeRow: some View {
-        if !model.string(relevantAuth, "deviceCode").isEmpty {
+        if model.bool(relevantAuth, "isRunning"), !model.string(relevantAuth, "deviceCode").isEmpty {
             Button {
                 UIPasteboard.general.string = model.string(relevantAuth, "deviceCode")
             } label: {
@@ -1219,6 +1383,10 @@ private struct NativeProviderEditor: View {
     }
 
     @ViewBuilder private var oauthActionRows: some View {
+        if model.bool(relevantAuth, "isRunning") {
+            ProgressView()
+            Button(model.text("Cancel", "取消")) { clearAuth() }
+        }
         if draft.piProviderId == "openai-codex" {
             wizardActionRow("safari", model.text("Browser login", "浏览器登录")) { authenticate(flow: "browser") }
             Divider()
@@ -1265,25 +1433,42 @@ private struct NativeProviderEditor: View {
         .disabled(model.bool(relevantAuth, "isRunning"))
     }
 
-    private var authenticateButton: some View {
-        Button { authenticate(flow: "") } label: {
-            if model.bool(relevantAuth, "isRunning") { ProgressView() } else { Label(model.text("Authenticate", "认证"), systemImage: "person.badge.key") }
-        }.disabled(model.bool(relevantAuth, "isRunning"))
-    }
-
-    @ViewBuilder private var oauthButtons: some View {
-        if draft.piProviderId == "openai-codex" {
-            Button { authenticate(flow: "browser") } label: { Label(model.text("Sign in with browser", "使用浏览器登录"), systemImage: "safari") }
-            Button { authenticate(flow: "device_code") } label: { Label(model.text("Sign in with device code", "使用设备代码登录"), systemImage: "number") }
-        } else if draft.piProviderId == "github-copilot" {
-            Button { authenticate(flow: "device_code") } label: { Label(model.text("Sign in with device code", "使用设备代码登录"), systemImage: "number") }
+    @ViewBuilder private var apiKeyContent: some View {
+        if ["cloudflare-ai-gateway", "cloudflare-workers-ai"].contains(draft.piProviderId) {
+            if model.bool(relevantAuth, "isRunning") {
+                ProgressView()
+                Button(model.text("Cancel", "取消")) { clearAuth() }
+            } else if !draft.apiKey.isEmpty {
+                Label(model.text("Credentials configured", "凭证已配置", "اطلاعات ورود تنظیم شد"), systemImage: "checkmark.shield")
+                Button(model.text("Disconnect", "断开连接"), role: .destructive) {
+                    clearAuth()
+                    draft.apiKey = ""
+                    draft.environment = []
+                }
+            } else {
+                Button { authenticate(flow: "") } label: {
+                    Label(model.text("Configure credentials", "配置凭证", "تنظیم اطلاعات ورود"), systemImage: "key")
+                }
+            }
         } else {
-            Button { authenticate(flow: "browser") } label: { Label(model.text("Sign in with browser", "使用浏览器登录"), systemImage: "safari") }
+            SecureField(model.text("API key", "API 密钥"), text: $draft.apiKey)
+                .textInputAutocapitalization(.never).autocorrectionDisabled()
         }
     }
 
     private func authenticate(flow: String) {
-        model.perform("provider_login", ["id": draft.id, "providerId": draft.piProviderId, "authMethod": draft.authMethod, "oauthFlow": flow])
+        clearAuth()
+        authSessionID = UUID().uuidString
+        model.perform("provider_login", ["id": draft.id, "providerId": draft.piProviderId, "authMethod": draft.authMethod, "oauthFlow": flow, "sessionId": authSessionID])
+    }
+
+    private func clearAuth() {
+        if !authSessionID.isEmpty { model.perform("provider_clear_auth", ["sessionId": authSessionID]) }
+        authSessionID = ""
+        appliedCredential = ""
+        openedAuthorizationURL = ""
+        presentedPromptID = ""
+        showingPrompt = false
     }
 
     @ViewBuilder private var authStatus: some View {
@@ -1291,15 +1476,15 @@ private struct NativeProviderEditor: View {
         if draft.authMethod != "oauth", !model.string(auth, "statusMessage").isEmpty {
             Text(model.string(auth, "statusMessage")).font(.caption).foregroundStyle(.secondary)
         }
-        if !model.string(auth, "authorizationUrl").isEmpty {
+        if model.bool(auth, "isRunning"), !model.string(auth, "authorizationUrl").isEmpty {
             Button { model.perform("provider_open_auth_url") } label: {
                 Label(model.text("Open authorization page", "打开认证页面"), systemImage: "safari")
             }
         }
-        if let url = URL(string: model.string(auth, "verificationUrl")), !url.absoluteString.isEmpty {
+        if model.bool(auth, "isRunning"), let url = URL(string: model.string(auth, "verificationUrl")), !url.absoluteString.isEmpty {
             Link(model.text("Open verification page", "打开验证页面"), destination: url)
         }
-        if auth["prompt"] != nil { Button(model.text("Continue authentication", "继续认证")) { showingPrompt = true } }
+        if auth["prompt"] is [String: Any] { Button(model.text("Continue authentication", "继续认证")) { showingPrompt = true } }
         if draft.authMethod != "oauth", !model.string(auth, "errorMessage").isEmpty {
             Text(model.string(auth, "errorMessage")).foregroundStyle(.red).font(.caption)
         }
@@ -1307,12 +1492,14 @@ private struct NativeProviderEditor: View {
 
     private func pairEditor(_ title: String, pairs: Binding<[NativeProviderPair]>) -> some View {
         DisclosureGroup(title) {
-            ForEach(pairs.wrappedValue.indices, id: \.self) { index in
+            ForEach(pairs) { pair in
                 HStack {
-                    TextField(model.text("Name", "名称"), text: pairs[index].name)
-                    TextField(model.text("Value", "值"), text: pairs[index].value)
-                    Button(role: .destructive) { pairs.wrappedValue.remove(at: index) } label: { Image(systemName: "minus.circle") }
+                    TextField(model.text("Name", "名称"), text: pair.name)
+                    SecureField(model.text("Value", "值"), text: pair.value)
+                    Button(role: .destructive) { pairs.wrappedValue.removeAll { $0.id == pair.wrappedValue.id } } label: { Image(systemName: "minus.circle") }
+                        .buttonStyle(.borderless)
                 }
+                .textInputAutocapitalization(.never).autocorrectionDisabled()
             }
             Button { pairs.wrappedValue.append(.init(name: "", value: "")) } label: { Label(model.text("Add", "添加"), systemImage: "plus") }
         }
@@ -1320,41 +1507,81 @@ private struct NativeProviderEditor: View {
 
     private func applyDefaults(_ id: String) {
         guard let item = model.providerCatalog.first(where: { model.string($0, "id") == id }) else { return }
+        clearAuth()
+        fetchRequestID = ""
+        fetchError = ""
+        waitingForWizardModels = false
         draft.name = model.string(item, "displayName")
-        draft.providerId = id.replacingOccurrences(of: "-", with: "_")
+        draft.providerId = NativeProviderDraft.availableProviderID(id.replacingOccurrences(of: "-", with: "_"),
+            existing: Set(model.providers.filter { model.string($0, "id") != draft.id }.map { model.string($0, "providerId") }))
         draft.baseURL = model.string(item, "defaultBaseUrl")
-        draft.modelIDs = model.string(item, "defaultModelId")
+        draft.modelIDs = ""
         draft.authMethod = model.bool(item, "supportsInteractiveApiKey") ? "api_key" : model.bool(item, "supportsOAuth") ? "oauth" : "ambient"
         draft.apiKey = ""; draft.oauthCredentialJson = ""; draft.compatibilityMode = false; draft.cachedModels = []; draft.enabledModels = Set(manualModels)
+        draft.environment = []; draft.headers = []; draft.userAgent = "Aether/1.0"
     }
 
-    private func fetchModels() { model.perform("provider_fetch_models", payload()) }
-    private func applyAuthResult() {
-        let auth = model.providerAuth
-        guard model.string(auth, "providerId") == draft.piProviderId else { return }
+    private func fetchModels() {
+        guard connectionIsValid, !isFetching else { return }
+        fetchRequestID = UUID().uuidString
+        fetchError = ""
+        var request = payload()
+        request["requestId"] = fetchRequestID
+        model.perform("provider_fetch_models", request)
+    }
+
+    private func applyResults(_ snapshot: [String: Any]) {
+        // Model results belong to a fetch request, not to an authentication session.
+        if !fetchRequestID.isEmpty, model.string(snapshot, "providerCompletedRequestId") == fetchRequestID {
+            let fetched = (snapshot["providerModels"] as? [String: Any])?[draft.id] as? [String] ?? []
+            fetchError = model.string(snapshot, "providerError")
+            draft.applyFetchedModels(fetched, error: fetchError)
+            fetchRequestID = ""
+            if waitingForWizardModels {
+                waitingForWizardModels = false
+                navigateWizard(to: 3)
+            }
+        }
+        let auth = snapshot["providerAuth"] as? [String: Any] ?? [:]
+        guard !authSessionID.isEmpty, model.string(auth, "sessionId") == authSessionID,
+              model.string(auth, "providerId") == draft.piProviderId,
+              model.string(auth, "authMethod") == draft.authMethod else { return }
         let authorizationURL = model.string(auth, "authorizationUrl")
-        if !authorizationURL.isEmpty && authorizationURL != openedAuthorizationURL {
+        if model.bool(auth, "isRunning"), !authorizationURL.isEmpty && authorizationURL != openedAuthorizationURL {
             openedAuthorizationURL = authorizationURL
             model.perform("provider_open_auth_url")
         }
-        let apiKey = model.string(auth, "apiKey"); if !apiKey.isEmpty { draft.apiKey = apiKey }
-        let credential = model.string(auth, "oauthCredentialJson"); if !credential.isEmpty { draft.oauthCredentialJson = credential }
+        let promptID = model.string(auth["prompt"] as? [String: Any] ?? [:], "id")
+        if promptID.isEmpty {
+            showingPrompt = false
+        } else if promptID != presentedPromptID {
+            presentedPromptID = promptID
+            showingPrompt = true
+        }
+        let apiKey = model.string(auth, "apiKey")
+        let credential = model.string(auth, "oauthCredentialJson")
+        let result = apiKey + credential
+        guard !result.isEmpty, result != appliedCredential else { return }
+        appliedCredential = result
+        if !apiKey.isEmpty { draft.apiKey = apiKey }
+        if !credential.isEmpty { draft.oauthCredentialJson = credential }
         if let values = auth["providerEnvironmentVariables"] as? [[String: Any]], !values.isEmpty { draft.environment = Self.pairs(values) }
-        let fetched = (model.snapshot["providerModels"] as? [String: Any])?[draft.id] as? [String] ?? []
-        if !fetched.isEmpty { draft.cachedModels = fetched; draft.enabledModels.formUnion(fetched) }
     }
 
     private func payload() -> [String: Any] {
         let orderedEnabledModels = allModels.filter(draft.enabledModels.contains)
-        return ["id": draft.id, "providerId": draft.providerId.trimmingCharacters(in: .whitespaces), "name": draft.name.trimmingCharacters(in: .whitespaces),
-         "piProviderId": draft.piProviderId, "authMethod": draft.authMethod, "apiKey": draft.apiKey, "oauthCredentialJson": draft.oauthCredentialJson,
+        let originalModel = original?["modelId"] as? String ?? ""
+        let primaryModel = orderedEnabledModels.contains(originalModel) ? originalModel : orderedEnabledModels.first ?? ""
+        return ["id": draft.id, "providerId": draft.providerId.trimmingCharacters(in: .whitespacesAndNewlines), "name": draft.name.trimmingCharacters(in: .whitespacesAndNewlines),
+         "piProviderId": draft.piProviderId, "authMethod": draft.authMethod, "apiKey": draft.apiKey.trimmingCharacters(in: .whitespacesAndNewlines), "oauthCredentialJson": draft.oauthCredentialJson,
          "providerEnvironmentVariables": draft.environment.filter { !$0.name.isEmpty }.map { ["name": $0.name, "value": $0.value] }, "baseUrl": draft.baseURL,
-         "modelId": orderedEnabledModels.first ?? manualModels.first ?? "", "manualModelIds": manualModels, "userAgent": draft.userAgent,
+         "modelId": primaryModel, "manualModelIds": manualModels, "userAgent": draft.userAgent,
          "customHeaders": draft.headers.filter { !$0.name.isEmpty }.map { ["name": $0.name, "value": $0.value] },
          "compatibilityMode": draft.piProviderId == "openai-compatible" && draft.compatibilityMode, "cachedModels": draft.cachedModels,
          "enabledModelIds": orderedEnabledModels, "isEnabled": draft.isEnabled, "createdAtMillis": draft.createdAt, "updatedAtMillis": Int64(Date().timeIntervalSince1970 * 1_000)]
     }
     private func save() {
+        guard isValid else { return }
         model.perform("provider_upsert", payload())
         dismiss()
     }
@@ -1376,19 +1603,27 @@ private struct NativeProviderAuthPromptView: View {
                 if let options = prompt["options"] as? [[String: Any]], !options.isEmpty {
                     Section { ForEach(options, id: \.nativeID) { option in Button(model.string(option, "label")) { submit(model.string(option, "id")) } } }
                 } else {
-                    TextField(model.string(prompt, "placeholder"), text: $value)
+                    if ["password", "secret"].contains(model.string(prompt, "type")) {
+                        SecureField(model.string(prompt, "placeholder"), text: $value)
+                            .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    } else {
+                        TextField(model.string(prompt, "placeholder"), text: $value)
+                            .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    }
                     Button(model.text("Submit", "提交")) { submit(value) }
                 }
             }
             .navigationTitle(model.text("Authentication", "认证"))
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button(model.text("Cancel", "取消")) { cancel() } } }
+            .interactiveDismissDisabled()
+            .onChange(of: model.string(model.providerAuth["prompt"] as? [String: Any] ?? [:], "id")) { _, _ in value = "" }
         }
     }
     private func submit(_ answer: String) { send(answer, false) }
     private func cancel() { send("", true) }
     private func send(_ answer: String, _ cancelled: Bool) {
         let prompt = model.providerAuth["prompt"] as? [String: Any] ?? [:]
-        model.perform("provider_auth_prompt", ["promptId": model.string(prompt, "id"), "value": answer, "cancelled": cancelled])
+        model.perform("provider_auth_prompt", ["promptId": model.string(prompt, "id"), "sessionId": model.string(model.providerAuth, "sessionId"), "value": answer, "cancelled": cancelled])
         dismiss()
     }
 }

@@ -85,7 +85,7 @@ internal sealed interface SharedMarkdownTextBlock {
     data object Rule : SharedMarkdownTextBlock
 }
 
-private sealed interface SharedMarkdownHtmlTextVariant {
+internal sealed interface SharedMarkdownHtmlTextVariant {
     data object Paragraph : SharedMarkdownHtmlTextVariant
     data class Heading(val level: Int) : SharedMarkdownHtmlTextVariant
     data object ListItem : SharedMarkdownHtmlTextVariant
@@ -475,6 +475,17 @@ internal fun parseSharedMarkdownTextBlocks(
             )
             continue
         }
+        val mathEnd = markdownDisplayMathBlockEnd(lines, index, SharedMarkdownLine::text)
+        if (mathEnd != null) {
+            blocks += SharedMarkdownTextBlock.Paragraph(
+                SharedMarkdownSourceText(
+                    lines.subList(index, mathEnd + 1).joinToString("\n") { it.text },
+                    line.startOffset,
+                ),
+            )
+            index = mathEnd + 1
+            continue
+        }
         val setextLevel = sharedSetextHeadingLevel(lines, index)
         if (setextLevel != null) {
             blocks += SharedMarkdownTextBlock.Heading(
@@ -616,6 +627,7 @@ private fun sharedMarkdownContentStartOffset(
 private fun beginsSharedMarkdownSpecialBlock(lines: List<SharedMarkdownLine>, index: Int): Boolean {
     val trimmed = lines.getOrNull(index)?.text?.trim() ?: return false
     return trimmed.startsWith("```") ||
+        markdownDisplayMathBlockEnd(lines, index, SharedMarkdownLine::text) != null ||
         sharedSetextHeadingLevel(lines, index) != null ||
         looksLikeSharedMarkdownTable(lines, index) ||
         sharedMarkdownHeadingPattern.matches(trimmed) ||
@@ -968,7 +980,7 @@ private fun StringBuilder.appendSharedInlineHtml(text: String) {
     }
 }
 
-private fun buildSharedMarkdownTextHtml(
+internal fun buildSharedMarkdownTextHtml(
     text: String,
     variant: SharedMarkdownHtmlTextVariant,
     textColor: Color,
@@ -1017,7 +1029,7 @@ private fun buildSharedMarkdownTextHtml(
             function postAether(message){if(window.Aether&&window.Aether.postMessage){window.Aether.postMessage(message);}}
             function reportAetherHeight(){var h=Math.max(document.documentElement.scrollHeight||0,document.body.scrollHeight||0,$SharedMarkdownTextMinHeightDp);postAether('height:'+h);}
             function bindAetherLinks(){document.querySelectorAll('a[href]').forEach(function(a){a.onclick=function(e){e.preventDefault();var href=a.getAttribute('href');if(href){postAether('link:'+href);}return false;};});}
-            function renderAetherMath(){bindAetherLinks();try{if(window.renderMathInElement){window.renderMathInElement(document.body,{delimiters:[{left:'${'$'}${'$'}',right:'${'$'}${'$'}',display:true},{left:'\\[',right:'\\]',display:true},{left:'${'$'}',right:'${'$'}',display:false},{left:'\\(',right:'\\)',display:false}],throwOnError:false,strict:'ignore',ignoredTags:['script','noscript','style','textarea','pre','code','option']});}}catch(e){}finally{bindAetherLinks();setTimeout(reportAetherHeight,0);setTimeout(reportAetherHeight,120);setTimeout(reportAetherHeight,360);}}
+            function renderAetherMath(){bindAetherLinks();try{if(window.renderMathInElement){window.renderMathInElement(document.body,{delimiters:$MarkdownMathDelimitersJson,throwOnError:false,strict:'ignore',ignoredTags:['script','noscript','style','textarea','pre','code','option']});}}catch(e){}finally{bindAetherLinks();setTimeout(reportAetherHeight,0);setTimeout(reportAetherHeight,120);setTimeout(reportAetherHeight,360);}}
             window.addEventListener('resize',reportAetherHeight);window.addEventListener('load',function(){setTimeout(renderAetherMath,0);setTimeout(reportAetherHeight,120);});
           </script>
         </body>

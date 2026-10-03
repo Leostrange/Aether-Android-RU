@@ -3,7 +3,10 @@ package com.zhousl.aether.agentmode
 import android.annotation.SuppressLint
 import android.app.ActivityOptions
 import android.app.PendingIntent
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -14,6 +17,7 @@ import android.hardware.display.VirtualDisplay
 import android.media.Image
 import android.media.ImageReader
 import android.os.Build
+import android.os.Handler
 import android.os.ParcelFileDescriptor
 import android.os.Process
 import android.os.SystemClock
@@ -43,6 +47,8 @@ private const val InjectInputEventModeWaitForFinish = 2
 private const val TapDurationMillis = 60L
 private const val KeyPressDurationMillis = 30L
 private const val ShellPackageName = "com.android.shell"
+private const val TextInputMethodKeyEvents = "key_events"
+private const val TextInputMethodClipboardPaste = "clipboard_paste"
 private const val SystemPackageName = "android"
 
 class AetherAgentModeShizukuService @Keep constructor(
@@ -53,6 +59,27 @@ class AetherAgentModeShizukuService @Keep constructor(
     private val privilegedContext: Context by lazy { contextForCurrentProcess(context) }
     private val displayManager: DisplayManager by lazy {
         privilegedContext.getSystemService<DisplayManager>()!!
+    }
+
+    /**
+     * ClipboardService verifies the caller's op package against its UID. [privilegedContext] is a
+     * package context created from Aether's context, and such contexts keep Aether's op package, so
+     * under Shizuku (shell UID) every write failed with "Package com.baimoqilin.aether does not belong
+     * to 2000". Build the manager on a context that reports this process's own package instead.
+     */
+    @delegate:SuppressLint("DiscouragedPrivateApi")
+    private val clipboardManager: ClipboardManager by lazy {
+        val identityContext = object : ContextWrapper(privilegedContext) {
+            override fun getOpPackageName(): String = baseContext.packageName
+        }
+        runCatching {
+            ClipboardManager::class.java
+                .getDeclaredConstructor(Context::class.java, Handler::class.java)
+                .apply { isAccessible = true }
+                .newInstance(identityContext, null)
+        }.getOrNull()
+            ?: privilegedContext.getSystemService<ClipboardManager>()
+            ?: error("Clipboard service is unavailable for this display.")
     }
     private val displays = ConcurrentHashMap<Int, VirtualDisplay>()
     private val imageReaders = ConcurrentHashMap<Int, ImageReader>()
@@ -254,12 +281,17 @@ class AetherAgentModeShizukuService @Keep constructor(
         injectKeyEvent(displayId, downTime, SystemClock.uptimeMillis(), KeyEvent.ACTION_UP, code, 0)
     }
 
-    override fun text(displayId: Int, text: String) {
+    override fun text(displayId: Int, text: String): String {
         ensureManagedDisplay(displayId)
-        if (text.isEmpty()) return
+        if (text.isEmpty()) return TextInputMethodKeyEvents
         val keyMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD)
+        // getEvents() returns null when any character has no key mapping (CJK, emoji, accented
+        // letters, ...). Those cannot be typed as KeyEvents, so the whole text is pasted instead.
         val events = keyMap.getEvents(text.toCharArray())
-            ?: error("Unable to convert text to keyboard events for this display.")
+        if (events == null) {
+            pasteText(displayId, text)
+            return TextInputMethodClipboardPaste
+        }
         var downTime = SystemClock.uptimeMillis()
         events.forEach { sourceEvent ->
             val now = SystemClock.uptimeMillis()
@@ -280,6 +312,29 @@ class AetherAgentModeShizukuService @Keep constructor(
                 SystemClock.sleep(4L)
             }
         }
+        return TextInputMethodKeyEvents
+    }
+
+    private fun pasteText(displayId: Int, text: String) {
+        clipboardManager.setPrimaryClip(ClipData.newPlainText("Aether Agent Mode", text))
+        val downTime = SystemClock.uptimeMillis()
+        injectKeyEvent(
+            displayId = displayId,
+            downTime = downTime,
+            eventTime = downTime,
+            action = KeyEvent.ACTION_DOWN,
+            keyCode = KeyEvent.KEYCODE_PASTE,
+            metaState = 0,
+        )
+        SystemClock.sleep(KeyPressDurationMillis)
+        injectKeyEvent(
+            displayId = displayId,
+            downTime = downTime,
+            eventTime = SystemClock.uptimeMillis(),
+            action = KeyEvent.ACTION_UP,
+            keyCode = KeyEvent.KEYCODE_PASTE,
+            metaState = 0,
+        )
     }
 
     override fun captureImageToFd(
@@ -428,6 +483,16 @@ class AetherAgentModeShizukuService @Keep constructor(
         return Bitmap.createScaledBitmap(bitmap, targetWidth, targetHeight, true)
     }
 
+    override fun focusedWindowJson(displayId: Int): String {
+        ensureManagedDisplay(displayId)
+        val process = ProcessBuilder("dumpsys", "input")
+            .redirectErrorStream(true)
+            .start()
+        val output = process.inputStream.bufferedReader().use { it.readText() }
+        process.waitFor()
+        return parseInputDispatcherFocus(output, displayId).toString()
+    }
+
     override fun listDisplaysJson(): String =
         JSONArray().apply {
             displayManager.displays.forEach { display ->
@@ -516,9 +581,39 @@ class AetherAgentModeShizukuService @Keep constructor(
         x: Float,
         y: Float,
     ) {
-        val event = MotionEvent.obtain(downTime, eventTime, action, x, y, 0).apply {
-            source = InputDevice.SOURCE_TOUCHSCREEN
-        }
+        // Mirror `input tap`: a finger pointer with pressure from a real touchscreen device. The
+        // short MotionEvent.obtain() overload produces TOOL_TYPE_UNKNOWN from device 0, which some
+        // apps (WeChat, WebView-based pages) ignore for focus and click handling.
+        val properties = arrayOf(
+            MotionEvent.PointerProperties().apply {
+                id = 0
+                toolType = MotionEvent.TOOL_TYPE_FINGER
+            }
+        )
+        val coords = arrayOf(
+            MotionEvent.PointerCoords().also { pointer ->
+                pointer.x = x
+                pointer.y = y
+                pointer.pressure = 1f
+                pointer.size = 1f
+            }
+        )
+        val event = MotionEvent.obtain(
+            downTime,
+            eventTime,
+            action,
+            1,
+            properties,
+            coords,
+            0,
+            0,
+            1f,
+            1f,
+            inputDeviceIdFor(InputDevice.SOURCE_TOUCHSCREEN),
+            0,
+            InputDevice.SOURCE_TOUCHSCREEN,
+            0,
+        )
         injectInputEventOnDisplay(displayId, event)
     }
 
@@ -558,7 +653,11 @@ class AetherAgentModeShizukuService @Keep constructor(
             )
             val injected = method.invoke(inputManager, event, InjectInputEventModeWaitForFinish) as Boolean
             if (!injected) {
-                error("Input event was rejected by Android input manager for display $displayId.")
+                error(
+                    "Android input manager rejected ${describeInputEvent(event)} on display $displayId. " +
+                        "This usually means no window on the display can receive it (nothing focused or " +
+                        "touchable at that point) or the app did not handle it within the dispatch timeout.",
+                )
             }
         } finally {
             if (event is MotionEvent) {
@@ -583,6 +682,17 @@ class AetherAgentModeShizukuService @Keep constructor(
         getInstance.isAccessible = true
         return getInstance.invoke(null)
             ?: error("Android input manager was not available.")
+    }
+
+    private fun inputDeviceIdFor(source: Int): Int =
+        InputDevice.getDeviceIds().firstOrNull { id ->
+            InputDevice.getDevice(id)?.supportsSource(source) == true
+        } ?: 0
+
+    private fun describeInputEvent(event: InputEvent): String = when (event) {
+        is MotionEvent -> "touch ${MotionEvent.actionToString(event.actionMasked)} at (${event.x.toInt()}, ${event.y.toInt()})"
+        is KeyEvent -> "key ${KeyEvent.keyCodeToString(event.keyCode)} ${if (event.action == KeyEvent.ACTION_DOWN) "down" else "up"}"
+        else -> "input event"
     }
 
     private fun parseKeyCode(rawValue: String): Int {
@@ -616,5 +726,35 @@ class AetherAgentModeShizukuService @Keep constructor(
             }
             error("Unable to create an Android context for Shizuku Agent Mode service.")
         }
+    }
+}
+
+/**
+ * Extracts the focused application and window for [displayId] from `dumpsys input` output. The
+ * InputDispatcher section lists one `displayId=N, name='...'` line per display under the
+ * `FocusedApplications:` and `FocusedWindows:` headers. `focused_window` is present (possibly empty)
+ * only when the headers were found, so callers can tell "nothing focused" from "unknown".
+ */
+internal fun parseInputDispatcherFocus(dump: String, displayId: Int): JSONObject {
+    val lines = dump.lines()
+    fun sectionEntry(header: String): String? {
+        val start = lines.indexOfFirst { it.trim().startsWith(header) }
+        if (start < 0) return null
+        // e.g. "FocusedWindows: <none>"
+        if (lines[start].trim().removePrefix(header).isNotBlank()) return ""
+        val prefix = "displayId=$displayId,"
+        for (line in lines.drop(start + 1)) {
+            val trimmed = line.trim()
+            if (!trimmed.startsWith("displayId=")) break
+            if (trimmed.startsWith(prefix)) {
+                return trimmed.substringAfter("name='", "").substringBefore("'")
+            }
+        }
+        return ""
+    }
+    return JSONObject().apply {
+        put("display_id", displayId)
+        sectionEntry("FocusedApplications:")?.takeIf { it.isNotEmpty() }?.let { put("focused_application", it) }
+        sectionEntry("FocusedWindows:")?.let { put("focused_window", it) }
     }
 }

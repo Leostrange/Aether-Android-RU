@@ -28,14 +28,20 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
-private const val PiBridgeAssetPath = "pi-bridge/bridge.mjs"
-private const val PiBridgeGuestPath = "/root/.aether/pi-bridge/bridge.mjs"
+private const val PiBridgeAssetDirectory = "pi-bridge"
+private const val PiBridgeGuestDirectory = "/root/.aether/pi-bridge"
+private const val PiBridgeAssetPath = "$PiBridgeAssetDirectory/bridge.mjs"
+private const val PiBridgeGuestPath = "$PiBridgeGuestDirectory/bridge.mjs"
+private const val PiBridgeWorkerAssetPath = "$PiBridgeAssetDirectory/image-resize-worker.js"
+private const val PiBridgeWorkerGuestPath = "$PiBridgeGuestDirectory/image-resize-worker.js"
+private const val PiBridgeWasmAssetPath = "$PiBridgeAssetDirectory/photon_rs_bg.wasm"
+private const val PiBridgeWasmGuestPath = "$PiBridgeGuestDirectory/photon_rs_bg.wasm"
 private const val PiBridgeWorkingDirectory = "/root/.aether/pi-bridge"
 private const val PiBridgeNodeMinVersion = "22.19.0"
 private const val PiBridgeVersion = "2.0.0-alpha.0"
-private const val PiAiVersion = "0.84.1"
-private const val PiAgentCoreVersion = "0.84.1"
-private const val PiCodingAgentVersion = "0.84.1"
+private const val PiAiVersion = "0.87.1"
+private const val PiAgentCoreVersion = "0.87.1"
+private const val PiCodingAgentVersion = "0.87.1"
 private const val PiBridgeRequestTimeoutMillis = 10 * 60 * 1000L
 private const val PiBridgeOAuthTimeoutMillis = 15 * 60 * 1000L
 private const val PiBridgePingTimeoutMillis = 15_000L
@@ -723,6 +729,16 @@ class PiKernelBridge(
             alpineRuntime.installAsset(
                 assetPath = PiBridgeAssetPath,
                 guestPath = PiBridgeGuestPath,
+                executable = false,
+            )
+            alpineRuntime.installAsset(
+                assetPath = PiBridgeWorkerAssetPath,
+                guestPath = PiBridgeWorkerGuestPath,
+                executable = false,
+            )
+            alpineRuntime.installAsset(
+                assetPath = PiBridgeWasmAssetPath,
+                guestPath = PiBridgeWasmGuestPath,
                 executable = false,
             )
             alpineRuntime.installPreinstalledExtensions()

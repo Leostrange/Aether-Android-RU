@@ -1,6 +1,11 @@
 package com.zhousl.aether.ui
 
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.Color
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -9,6 +14,60 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class SharedMarkdownRendererTest {
+    @Test
+    fun displayMathKeepsStandaloneEqualsAndSourceOffsets() {
+        val formulas = listOf(
+            "\\text{mass}\\times\\text{acceleration}\n=\n\\text{force}",
+            "\\rho\\left(\n\\frac{\\partial \\mathbf{u}}{\\partial t}\n+\n" +
+                "\\mathbf{u}\\cdot\\nabla\\mathbf{u}\n\\right)\n=\n" +
+                "-\\nabla p+\\mu\\nabla^2\\mathbf{u}+\\mathbf{f}",
+        )
+        for ((open, close) in listOf("\\[" to "\\]", "$$" to "$$")) {
+            for (formula in formulas) {
+                val math = "$open\n$formula\n$close"
+                val blocks = parseSharedMarkdownTextBlocks(
+                    "Before\n$math\nAfter\n\nTitle\n=====", sourceOffset = 40,
+                )
+                assertEquals(4, blocks.size)
+                assertIs<SharedMarkdownTextBlock.Paragraph>(blocks[0])
+                val source = assertIs<SharedMarkdownTextBlock.Paragraph>(blocks[1]).text
+                assertEquals(math, source.text)
+                assertEquals(47, source.sourceOffset)
+                assertEquals("After", assertIs<SharedMarkdownTextBlock.Paragraph>(blocks[2]).text.text)
+                assertIs<SharedMarkdownTextBlock.Heading>(blocks[3])
+                assertTrue(containsSharedRenderableMarkdownMath(source.text))
+            }
+        }
+    }
+
+    @Test
+    fun displayMathInCodeFencesStaysCode() {
+        val blocks = parseSharedMarkdownTextBlocks("```tex\n\\[\na\n=\nb\n\\]\n```")
+        assertIs<SharedMarkdownTextBlock.CodeFence>(blocks.single())
+    }
+
+    @Test
+    fun mathHtmlUsesSingleBackslashTexDelimitersAtRuntime() {
+        val source = "Inline \\(x^2\\) and \\[\\frac{1}{2}\\] and ${'$'}x${'$'} and ${'$'}${'$'}y${'$'}${'$'}"
+        val html = buildSharedMarkdownTextHtml(
+            source, SharedMarkdownHtmlTextVariant.Paragraph, Color.Black, Color.Blue, Color.Gray,
+        )
+        val delimiters = Json.parseToJsonElement(
+            html.substringAfter("delimiters:").substringBefore("],") + "]",
+        ).jsonArray
+
+        assertEquals(listOf("$$", "\\[", "$", "\\("), delimiters.map {
+            it.jsonObject.getValue("left").jsonPrimitive.content
+        })
+        assertEquals(listOf("$$", "\\]", "$", "\\)"), delimiters.map {
+            it.jsonObject.getValue("right").jsonPrimitive.content
+        })
+        assertEquals(listOf("true", "true", "false", "false"), delimiters.map {
+            it.jsonObject.getValue("display").jsonPrimitive.content
+        })
+        assertContains(html, source)
+    }
+
     @Test
     fun inlineMarkdownDoesNotInjectBidiControlsIntoSelectableText() {
         val rendered = sharedInlineMarkdown(

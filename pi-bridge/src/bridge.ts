@@ -98,9 +98,9 @@ reserveProtocolStdout();
 registerBunOAuthFlows();
 
 const BRIDGE_VERSION = "2.0.0-alpha.0";
-const PI_AI_VERSION = "0.84.1";
-const PI_AGENT_CORE_VERSION = "0.84.1";
-const PI_CODING_AGENT_VERSION = "0.84.1";
+const PI_AI_VERSION = "0.87.1";
+const PI_AGENT_CORE_VERSION = "0.87.1";
+const PI_CODING_AGENT_VERSION = "0.87.1";
 const AETHER_LOOPBACK_OAUTH_CALLBACK_HOST = "127.0.0.1";
 const OAUTH_FETCH_MAX_ATTEMPTS = 3;
 const DEFAULT_AGENT_RETRY_MAX_RETRIES = 5;
@@ -1077,7 +1077,11 @@ function buildModels(config: ModelConfig): {
       faux.setResponses([
         fauxAssistantMessage(
           config.faux_tool_calls.map((toolCall) =>
-            fauxToolCall(toolCall.name, toolCall.arguments, toolCall.id ? { id: toolCall.id } : undefined),
+            fauxToolCall(
+              toolCall.name,
+              toolCall.arguments as Parameters<typeof fauxToolCall>[1],
+              toolCall.id ? { id: toolCall.id } : undefined,
+            ),
           ),
           { stopReason: "toolUse" },
         ),
@@ -1134,6 +1138,11 @@ function buildModels(config: ModelConfig): {
         : {
             id: config.model_id,
             name: config.model_id,
+            // A model entered through a provider's live model list is not in
+            // Pi's static catalog yet. Keep image input enabled so a newly
+            // released vision model is not silently downgraded to text-only
+            // just because the catalog has not caught up.
+            input: ["text", "image"],
             reasoning: config.reasoning ?? false,
             contextWindow: config.context_window ?? 128000,
             maxTokens: config.max_tokens ?? 16384,

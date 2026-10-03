@@ -15,6 +15,9 @@ projectReferences:
   libarchive:
     path: ../third_party/ish-arm64/deps/libarchive.xcodeproj
 packages:
+  PostHog:
+    url: https://github.com/PostHog/posthog-ios.git
+    exactVersion: 3.71.4
   Runestone:
     url: https://github.com/simonbs/Runestone.git
     exactVersion: 0.5.2
@@ -32,6 +35,10 @@ targets:
         buildPhase: resources
       - path: Resources/Runtime/bridge.mjs
       - path: Resources/Runtime/extension-bridge.mjs
+        buildPhase: resources
+      - path: Resources/Runtime/image-resize-worker.js
+        buildPhase: resources
+      - path: Resources/Runtime/photon_rs_bg.wasm
         buildPhase: resources
       - path: Resources/Runtime/root.tar.gz
         buildPhase: resources
@@ -88,6 +95,7 @@ targets:
       - target: AetherFileProvider
       - target: libarchive/libarchive
       - package: Runestone
+      - package: PostHog
       - sdk: SystemConfiguration.framework
       - sdk: libbz2.tbd
       - sdk: libiconv.tbd
@@ -100,8 +108,11 @@ targets:
         basedOnDependencyAnalysis: false
       - name: Build AetherShared
         script: |
+          set -e
           cd "$SRCROOT/.."
-          bash ./gradlew -Paether.sharedOnly=true :shared:embedAndSignAppleFrameworkForXcode
+          bash ./gradlew -Paether.sharedOnly=true :shared:embedAndSignAppleFrameworkForXcode :shared:generateIosPostHogConfig
+          mkdir -p "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH"
+          cp shared/build/generated/posthog/PostHogConfig.json "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/PostHogConfig.json"
         basedOnDependencyAnalysis: false
       - name: Build iSH ARM64 Runtime
         script: |

@@ -328,7 +328,13 @@ static void AetherISHDie(const char *message) {
     exit_hook = AetherISHProcessExited;
     die_handler = AetherISHDie;
 #if !TARGET_OS_SIMULATOR
-    NSString *socketPrefix = [NSTemporaryDirectory() stringByAppendingString:@"aether-ish-sock"];
+    // Darwin sun_path is only 104 bytes, including the sandbox path and suffix.
+    NSString *socketDirectory = NSTemporaryDirectory();
+    // /var is the system alias of /private/var on iOS. Keep the sandbox location.
+    if ([socketDirectory hasPrefix:@"/private/var/"]) {
+        socketDirectory = [socketDirectory substringFromIndex:@"/private".length];
+    }
+    NSString *socketPrefix = [socketDirectory stringByAppendingPathComponent:@"s"];
     sock_tmp_prefix = strdup(socketPrefix.UTF8String);
 #endif
     [self configureDNS];

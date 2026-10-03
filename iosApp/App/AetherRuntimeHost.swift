@@ -1457,14 +1457,27 @@ final class AetherRuntimeHost: NSObject, NativeRuntimeHost, UIDocumentPickerDele
             guestName: "extension-bridge.mjs",
             markerName: ".extension-bridge.sha256"
         )
+        try installBridgeAsset(
+            resource: "image-resize-worker",
+            fileExtension: "js",
+            guestName: "image-resize-worker.js",
+            markerName: ".image-resize-worker.sha256"
+        )
+        try installBridgeAsset(
+            resource: "photon_rs_bg",
+            fileExtension: "wasm",
+            guestName: "photon_rs_bg.wasm",
+            markerName: ".photon_rs_bg.sha256"
+        )
     }
 
     private func installBridgeAsset(
         resource: String,
+        fileExtension: String = "mjs",
         guestName: String,
         markerName: String
     ) throws {
-        guard let source = Bundle.main.url(forResource: resource, withExtension: "mjs") else {
+        guard let source = Bundle.main.url(forResource: resource, withExtension: fileExtension) else {
             throw RuntimeHostError.operationFailed("Bundled \(resource) is missing.")
         }
         let bytes = try Data(contentsOf: source)

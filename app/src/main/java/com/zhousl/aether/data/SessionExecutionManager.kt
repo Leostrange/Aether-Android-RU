@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancelAndJoin
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -102,6 +103,8 @@ data class SessionExecutionState(
     val activeResponseGroupId: String? = null,
     val activeTurnStartedAtMillis: Long? = null,
 )
+
+data class ShowcaseReplayState(val playing: Boolean = false, val paused: Boolean = false, val speed: Float = 1f)
 
 data class SessionTurnRequest(
     val sessionId: String,
@@ -190,6 +193,58 @@ class SessionExecutionManager(
     private val queuedTurnRequestBuilder = QueuedTurnRequestBuilder(chatStateStore)
 
     val executionStates: StateFlow<Map<String, SessionExecutionState>> = _executionStates.asStateFlow()
+    private val showcaseJobs = mutableMapOf<String, Job>()
+    private val showcasePlayers = mutableMapOf<String, ShowcasePlayback>()
+    private val _showcaseStates = MutableStateFlow<Map<String, ShowcaseReplayState>>(emptyMap())
+    val showcaseStates = _showcaseStates.asStateFlow()
+
+    fun replayShowcase(sessionId: String, restoreOnly: Boolean = false) {
+        if (!com.zhousl.aether.BuildConfig.SHOWCASE_MODE || !ShowcaseCatalog.isSession(sessionId)) return
+        val previous = showcaseJobs[sessionId]
+        showcaseJobs[sessionId] = scope.launch {
+            previous?.cancelAndJoin()
+            val template = AndroidShowcase.catalog().firstOrNull { it.id == sessionId } ?: return@launch
+            val player = ShowcasePlayback().also { it.speed = _showcaseStates.value[sessionId]?.speed ?: 1f }
+            showcasePlayers[sessionId] = player
+            try {
+                if (!restoreOnly) {
+                    _showcaseStates.update { it + (sessionId to ShowcaseReplayState(playing = true, speed = player.speed)) }
+                    var completedCount = -1
+                    player.play(template) { completed, pending ->
+                        if (completedCount != completed.size) {
+                            val visible = AndroidShowcase.convert(template.copy(messages = completed))
+                            chatStateStore.update { state -> state.copy(sessions = state.sessions.map { if (it.id == sessionId) it.copy(messages = visible.messages, messageCount = visible.messages.size) else it }) }
+                            completedCount = completed.size
+                        }
+                        val blocks = pending?.let(AndroidShowcase::pendingBlocks).orEmpty()
+                        _executionStates.update { it + (sessionId to SessionExecutionState(
+                            sessionId = sessionId, isRunning = true, pendingResponseBlocks = blocks,
+                            pendingToolInvocations = blocks.filterIsInstance<AssistantResponseBlock.ToolGroup>().flatMap { block -> block.toolInvocations },
+                            pendingAssistantText = blocks.filterIsInstance<AssistantResponseBlock.Text>().lastOrNull()?.text.orEmpty(),
+                            activeResponseGroupId = pending?.responseGroupId,
+                            activeTurnStartedAtMillis = pending?.createdAtMillis,
+                        )) }
+                    }
+                }
+                val completed = AndroidShowcase.convert(template)
+                chatStateStore.updateAndFlush { state -> state.copy(sessions = state.sessions.map { if (it.id == sessionId) it.copy(messages = completed.messages, messageCount = completed.messages.size) else it }) }
+            } finally {
+                _executionStates.update { it - sessionId }
+                _showcaseStates.update { it + (sessionId to ShowcaseReplayState(speed = player.speed)) }
+            }
+        }
+    }
+
+    fun toggleShowcasePause(sessionId: String) {
+        val player = showcasePlayers[sessionId] ?: return
+        player.paused = !player.paused
+        _showcaseStates.update { it + (sessionId to ShowcaseReplayState(true, player.paused, player.speed)) }
+    }
+
+    fun setShowcaseSpeed(sessionId: String, speed: Float) {
+        showcasePlayers[sessionId]?.speed = speed
+        _showcaseStates.update { it + (sessionId to (it[sessionId] ?: ShowcaseReplayState()).copy(speed = speed)) }
+    }
     val turnEvents = _turnEvents.asSharedFlow()
 
     init {
@@ -216,6 +271,10 @@ class SessionExecutionManager(
         _executionStates.value[sessionId]?.isRunning == true
 
     fun startTurn(request: SessionTurnRequest) {
+        if (com.zhousl.aether.BuildConfig.SHOWCASE_MODE) {
+            replayShowcase(request.sessionId)
+            return
+        }
         val handle = SessionExecutionHandle(sessionId = request.sessionId)
         handle.replaceRetainedMessages(request.requestMessages)
         if (executionHandles.putIfAbsent(request.sessionId, handle) != null) return
@@ -308,6 +367,10 @@ class SessionExecutionManager(
     }
 
     fun pauseSession(sessionId: String): ChatSession? {
+        if (com.zhousl.aether.BuildConfig.SHOWCASE_MODE) {
+            toggleShowcasePause(sessionId)
+            return chatStateStore.state.value.sessions.firstOrNull { it.id == sessionId }
+        }
         val handle = executionHandles[sessionId] ?: return null
         if (handle.pauseRequested) return null
         handle.pauseRequested = true

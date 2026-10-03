@@ -1,0 +1,11 @@
+Aether film fixture: simulated Readest repair
+Original container: central-directory damaged
+Backup: 8fa21.backup
+Recovered entries: 18
+Chapters: 13
+CRC: PASS
+OPF/spine: PASS
+Ownership: 10342:10342
+Permissions: 0600
+Reading position: retained
+No device book files were modified to create this fixture.

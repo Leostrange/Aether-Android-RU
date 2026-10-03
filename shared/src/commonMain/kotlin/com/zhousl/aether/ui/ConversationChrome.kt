@@ -86,6 +86,7 @@ fun AetherConversationTopBarFrame(
                 ),
             content = centerContent,
         )
+        LocalShowcaseControls.current?.let { ShowcasePlaybackButton(it) }
         HeaderCircleButton(
             icon = LucideIcons.SquarePen,
             contentDescription = newChatDescription,

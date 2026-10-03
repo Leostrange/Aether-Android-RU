@@ -1,55 +1,17 @@
-name: Feature request / 功能建议
-description: Suggest an improvement to Aether / 为 Aether 提出改进建议
-title: "[Feature Request] "
-labels:
-  - enhancement
-
+name: Предложение
+description: Предложить улучшение Aether Android RU
+title: '[Feature] '
+labels: [enhancement]
 body:
-  - type: checkboxes
-    id: preflight
+  - type: textarea
+    id: request
     attributes:
-      label: Before submitting / 提交前确认
-      options:
-        - label: I have read the documentation and found no relevant information. / 我已阅读文档，且未找到相关内容。
-          required: true
-        - label: I have searched existing issues and found no relevant request. / 我已搜索过 Issue，且未找到相关的功能建议。
-          required: true
-        - label: I have updated to the latest последней Android-сборки and confirmed that this feature is not already available. / 我已更新至最新 последней Android-сборки，并确认该功能尚未提供。
-          required: true
-        - label: I have removed secrets and personal information. / 我已移除密钥和个人信息。
-          required: true
-
-  - type: dropdown
-    id: platform
-    attributes:
-      label: Target platform / 目标平台
-      description: Select all that apply. / 可多选。
-      multiple: true
-      options:
-        - Android
+      label: Что улучшить
+      description: Опишите задачу и предложенное решение.
     validations:
       required: true
-
   - type: textarea
-    id: feature-request
+    id: context
     attributes:
-      label: Feature request / 功能请求
-      description: Describe the feature and the problem it would solve. / 描述你希望新增或改进的功能，以及它要解决的问题。
-    validations:
-      required: true
-
-  - type: textarea
-    id: why-not-extensions
-    attributes:
-      label: Why this cannot be done with an extension? / 为什么不能使用扩展实现？
-      description: For features that are not needed by everyone, we recommend implementing them via extensions. / 对于并非所有人都需要的功能，我们建议通过扩展来实现。
-    validations:
-      required: true
-
-  - type: textarea
-    id: additional-context
-    attributes:
-      label: Additional context (optional) / 补充信息（可选）
-      description: Add examples, screenshots, or links. / 添加示例、截图或链接。
-    validations:
-      required: false
+      label: Дополнительная информация
+      description: Примеры, ссылки или скриншоты.

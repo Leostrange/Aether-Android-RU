@@ -1,7 +1,7 @@
 {
   "name": "@tintinweb/pi-subagents",
   "version": "0.16.1-aether.1",
-  "description": "Расширение Pi с автономными субагентами в стиле Claude Code.",
+  "description": "A Pi extension with Claude Code-style autonomous subagents.",
   "author": "tintinweb",
   "license": "MIT",
   "repository": {
@@ -46,9 +46,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.14",
-    "@earendil-works/pi-ai": "0.84.2",
-    "@earendil-works/pi-coding-agent": "0.84.2",
-    "@earendil-works/pi-tui": "0.84.2",
+    "@earendil-works/pi-ai": "0.85.1",
+    "@earendil-works/pi-coding-agent": "0.85.1",
+    "@earendil-works/pi-tui": "0.85.1",
     "@types/node": "^25.5.0",
     "@vitest/coverage-istanbul": "^4.1.10",
     "typescript": "^6.0.0",

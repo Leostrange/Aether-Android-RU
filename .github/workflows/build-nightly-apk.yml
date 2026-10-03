@@ -7,6 +7,7 @@ on:
     paths:
       - 'app/**'
       - 'shared/**'
+      - 'extensions/**'
       - 'pi-bridge/**'
       - 'packages/extension-api/**'
       - 'third_party/termux/terminal-emulator/**'
@@ -36,6 +37,13 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+          cache: npm
+          cache-dependency-path: pi-bridge/package-lock.json
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
@@ -44,6 +52,8 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
 
       - name: Make Gradle executable
         run: chmod +x ./gradlew
@@ -56,15 +66,28 @@ jobs:
           echo "short_sha=$short_sha" >> "$GITHUB_OUTPUT"
           echo "version_name=Nightly $short_sha" >> "$GITHUB_OUTPUT"
 
-      - name: Restore Nightly Signing Key
+      - name: Test shared and Android code
+        run: ./gradlew :shared:testDebugUnitTest :app:testDebugUnitTest --stacktrace
+
+      - name: Restore Nightly Signing Key when configured
+        id: signing
         shell: bash
         env:
           NIGHTLY_KEYSTORE_BASE64: ${{ secrets.NIGHTLY_KEYSTORE_BASE64 }}
+          NIGHTLY_KEYSTORE_PASSWORD: ${{ secrets.NIGHTLY_KEYSTORE_PASSWORD }}
+          NIGHTLY_KEY_ALIAS: ${{ secrets.NIGHTLY_KEY_ALIAS }}
+          NIGHTLY_KEY_PASSWORD: ${{ secrets.NIGHTLY_KEY_PASSWORD }}
         run: |
-          mkdir -p "$RUNNER_TEMP/aether-signing"
-          echo "$NIGHTLY_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/aether-signing/aether-nightly.jks"
+          if [[ -n "$NIGHTLY_KEYSTORE_BASE64" && -n "$NIGHTLY_KEYSTORE_PASSWORD" && -n "$NIGHTLY_KEY_ALIAS" && -n "$NIGHTLY_KEY_PASSWORD" ]]; then
+            mkdir -p "$RUNNER_TEMP/aether-signing"
+            echo "$NIGHTLY_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/aether-signing/aether-nightly.jks"
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build Nightly APK
+        if: steps.signing.outputs.enabled == 'true'
         env:
           NIGHTLY_KEYSTORE_FILE: ${{ runner.temp }}/aether-signing/aether-nightly.jks
           NIGHTLY_KEYSTORE_PASSWORD: ${{ secrets.NIGHTLY_KEYSTORE_PASSWORD }}
@@ -73,13 +96,24 @@ jobs:
           VERSION_NAME: ${{ steps.nightly.outputs.version_name }}
         run: ./gradlew :app:assembleNightly --stacktrace -Paether.versionName="$VERSION_NAME"
 
+      - name: Build debug APK for forks without signing secrets
+        if: steps.signing.outputs.enabled != 'true'
+        env:
+          VERSION_NAME: ${{ steps.nightly.outputs.version_name }}
+        run: ./gradlew :app:assembleDebug --stacktrace -Paether.versionName="$VERSION_NAME"
+
       - name: Rename Nightly APK
         shell: bash
         env:
           SHORT_SHA: ${{ steps.nightly.outputs.short_sha }}
+          SIGNED_NIGHTLY: ${{ steps.signing.outputs.enabled }}
         run: |
           mkdir -p dist/nightly
-          cp app/build/outputs/apk/nightly/app-nightly.apk "dist/nightly/Aether-nightly-${SHORT_SHA}.apk"
+          if [[ "$SIGNED_NIGHTLY" == "true" ]]; then
+            cp app/build/outputs/apk/nightly/app-nightly.apk "dist/nightly/Aether-nightly-${SHORT_SHA}.apk"
+          else
+            cp app/build/outputs/apk/debug/app-debug.apk "dist/nightly/Aether-RU-debug-${SHORT_SHA}.apk"
+          fi
 
       - name: Upload Nightly APK
         uses: actions/upload-artifact@v7

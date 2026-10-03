@@ -1,0 +1,288 @@
+{
+  "fixture": true,
+  "model": "gemini-3.8-flash",
+  "concurrency": 8,
+  "note": "Simulated execution manifest; attached reading notes are public-domain source excerpts, not live model output.",
+  "chapters": [
+    {
+      "chapter": 1,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 2,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 3,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 4,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 5,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 6,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 7,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 8,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 9,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 10,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 11,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 12,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 13,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 14,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 15,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 16,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 17,
+      "status": "completed",
+      "attempts": 2
+    },
+    {
+      "chapter": 18,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 19,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 20,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 21,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 22,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 23,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 24,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 25,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 26,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 27,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 28,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 29,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 30,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 31,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 32,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 33,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 34,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 35,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 36,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 37,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 38,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 39,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 40,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 41,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 42,
+      "status": "completed",
+      "attempts": 2
+    },
+    {
+      "chapter": 43,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 44,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 45,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 46,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 47,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 48,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 49,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 50,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 51,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 52,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 53,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 54,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 55,
+      "status": "completed",
+      "attempts": 1
+    },
+    {
+      "chapter": 56,
+      "status": "completed",
+      "attempts": 1
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 package com.zhousl.aether.ui
 
 import androidx.compose.ui.unit.dp
+import org.json.JSONArray
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -8,6 +9,56 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MarkdownRendererTest {
+    @Test
+    fun displayMathKeepsStandaloneEqualsAndSourceOffsets() {
+        val formulas = listOf(
+            "\\text{mass}\\times\\text{acceleration}\n=\n\\text{force}",
+            "\\rho\\left(\n\\frac{\\partial \\mathbf{u}}{\\partial t}\n+\n" +
+                "\\mathbf{u}\\cdot\\nabla\\mathbf{u}\n\\right)\n=\n" +
+                "-\\nabla p+\\mu\\nabla^2\\mathbf{u}+\\mathbf{f}",
+        )
+        for ((open, close) in listOf("\\[" to "\\]", "$$" to "$$")) {
+            for (formula in formulas) {
+                val math = "$open\n$formula\n$close"
+                val blocks = parseMarkdownBlocks("Before\n$math\nAfter\n\nTitle\n=====")
+                assertEquals(listOf("Paragraph", "Paragraph", "Paragraph", "Heading"),
+                    blocks.map { it?.javaClass?.simpleName })
+                val block = requireNotNull(blocks[1])
+                val source = block.javaClass.getDeclaredMethod("getText").apply {
+                    isAccessible = true
+                }.invoke(block) as MarkdownSourceText
+                assertEquals(math, source.text)
+                assertEquals(7, source.sourceOffset)
+            }
+        }
+    }
+
+    @Test
+    fun displayMathInCodeFencesStaysCode() {
+        val blocks = parseMarkdownBlocks("```tex\n\\[\na\n=\nb\n\\]\n```")
+        assertEquals(listOf("CodeFence"), blocks.map { it?.javaClass?.simpleName })
+    }
+
+    @Test
+    fun mathHtmlUsesSingleBackslashTexDelimitersAtRuntime() {
+        val source = "Inline \\(x^2\\) and \\[\\frac{1}{2}\\] and ${'$'}x${'$'} and ${'$'}${'$'}y${'$'}${'$'}"
+        val html = buildMarkdownTextHtml(source, MarkdownHtmlTextVariant.Paragraph)
+        val delimiters = JSONArray(
+            html.substringAfter("delimiters:").substringBefore("],") + "]",
+        ).let { array -> (0 until array.length()).map(array::getJSONObject) }
+
+        assertEquals(listOf("$$", "\\[", "$", "\\("), delimiters.map {
+            it.getString("left")
+        })
+        assertEquals(listOf("$$", "\\]", "$", "\\)"), delimiters.map {
+            it.getString("right")
+        })
+        assertEquals(listOf(true, true, false, false), delimiters.map {
+            it.getBoolean("display")
+        })
+        assertTrue(html.contains(source))
+    }
+
     @Test
     fun inlineMarkdownDoesNotInjectBidiControlsIntoSelectableText() {
         val rendered = inlineMarkdown(

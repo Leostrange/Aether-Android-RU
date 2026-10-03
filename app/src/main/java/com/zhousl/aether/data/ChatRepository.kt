@@ -131,10 +131,30 @@ class ChatRepository(
     private val chatHistoryDao: ChatHistoryDao = database.chatHistoryDao()
     private val restoredMessageCache = mutableMapOf<ChatMessageCacheKey, LoadedChatMessage>()
     private val restoredMessageCacheMutex = Mutex()
+    private val showcaseInitializationMutex = Mutex()
+    private var showcaseInitialized = false
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override val chatState: Flow<PersistedChatState> = flow {
         migrateLegacyChatStateIfNeeded()
+        if (com.zhousl.aether.BuildConfig.SHOWCASE_MODE) {
+            showcaseInitializationMutex.withLock {
+                if (!showcaseInitialized) {
+                    val rows = chatHistoryDao.getSessions()
+                    val demos = AndroidShowcase.sessions().map { demo ->
+                        val selectedModel = rows.firstOrNull { it.id == demo.id }?.selectedModelKey
+                        demo.copy(selectedModelKey = selectedModel?.takeIf(String::isNotBlank) ?: demo.selectedModelKey)
+                    }
+                    val existing = rows.filterNot { ShowcaseCatalog.isSession(it.id) }
+                        .map { row -> row.toChatSession(emptyList()) }
+                    val currentId = chatHistoryDao.getMeta()?.currentSessionId
+                        ?.takeIf { id -> demos.any { it.id == id } }
+                    // Non-demo rows contain metadata only; keep one of the fully loaded demos active.
+                    updateChatState(demos + existing, currentId ?: demos.first().id)
+                    showcaseInitialized = true
+                }
+            }
+        }
         emitAll(
             combine(
                 chatHistoryDao.observeSessions(),
@@ -639,11 +659,19 @@ class ChatRepository(
                     syncedMessages.isEmpty() &&
                     existingMessageCount > 0
                 if (!isMetadataOnlySnapshot) {
-                    chatHistoryDao.deleteWorkspaceFileRefsForSession(session.id)
-                    chatHistoryDao.deleteMessagesForSession(session.id)
-                    chatHistoryDao.upsertMessagesChunked(
+                    val messageEntities = syncedMessages.mapIndexed { index, message ->
+                        ChatMessageEntityMapper.toEntity(
+                            sessionId = session.id,
+                            position = index,
+                            message = message,
+                        )
+                    }
+                    val workspaceFileRefs = syncedMessages.toWorkspaceFileRefs(session.id)
+                    chatHistoryDao.syncMessagesForSession(
                         sessionId = session.id,
-                        messages = syncedMessages,
+                        messages = messageEntities,
+                        retainedAgentMessageIds = syncedMessages.allBranchMessageIds(),
+                        workspaceFileRefs = workspaceFileRefs,
                     )
                 }
             }
@@ -992,6 +1020,14 @@ private fun ChatSession.toSessionEntity(sortOrder: Long): ChatSessionEntity = Ch
     selectedModelKey = selectedModelKey,
     sortOrder = sortOrder,
 )
+
+private fun List<ChatMessage>.allBranchMessageIds(): Set<String> = buildSet {
+    fun collect(message: ChatMessage) {
+        add(message.id)
+        message.branchGroup?.branches.orEmpty().forEach { branch -> branch.forEach(::collect) }
+    }
+    forEach(::collect)
+}
 
 private fun List<ChatMessage>.toWorkspaceFileRefs(sessionId: String): List<ChatWorkspaceFileRefEntity> =
     flatMap { message -> message.toWorkspaceFileRefs(sessionId) }

@@ -1,5 +1,6 @@
 # Gradle and Android build output
 .gradle/
+.kotlin/
 build/
 **/build/
 **/.cxx/
@@ -26,6 +27,8 @@ iosApp/Configuration/Local.xcconfig
 iosApp/Resources/Runtime/root.tar.gz
 iosApp/Resources/Runtime/bridge.mjs
 iosApp/Resources/Runtime/extension-bridge.mjs
+iosApp/Resources/Runtime/image-resize-worker.js
+iosApp/Resources/Runtime/photon_rs_bg.wasm
 iosApp/Resources/Runtime/extensions/
 DerivedData/
 

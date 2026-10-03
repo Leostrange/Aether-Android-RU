@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+import groovy.json.JsonOutput
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -92,4 +94,23 @@ compose.resources {
     publicResClass = true
     packageOfResClass = "com.zhousl.aether.shared.resources"
     generateResClass = always
+}
+
+tasks.register("generateIosPostHogConfig") {
+    val output = layout.buildDirectory.file("generated/posthog/PostHogConfig.json")
+    outputs.file(output)
+    outputs.upToDateWhen { false }
+    doLast {
+        val local = Properties()
+        rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use(local::load)
+        val config = mapOf(
+            "apiKey" to (System.getenv("POSTHOG_API_KEY") ?: local.getProperty("posthog.apiKey", "")).trim(),
+            "host" to (System.getenv("POSTHOG_HOST") ?: local.getProperty("posthog.host", ""))
+                .trim().ifBlank { "https://us.i.posthog.com" },
+        )
+        output.get().asFile.apply {
+            parentFile.mkdirs()
+            writeText(JsonOutput.toJson(config))
+        }
+    }
 }

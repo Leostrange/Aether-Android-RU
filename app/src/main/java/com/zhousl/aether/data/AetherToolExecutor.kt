@@ -223,7 +223,10 @@ private fun agentModeToolDefinition(): JSONObject = JSONObject().apply {
     put("name", "agent_display")
     put(
         "description",
-        "Operate Aether Agent Mode on an isolated Android virtual display. Use this only when Agent Mode is selected in the chat composer.",
+        "Operate Aether Agent Mode on an isolated Android virtual display. Use this only when Agent Mode is selected in the chat composer. " +
+            "tap/swipe coordinates are normalized 0..1000 on each axis, independent of resolution; values above 1000 are rejected. " +
+            "Results report width/height (display pixels), image_width/image_height (screenshot pixels), " +
+            "cursor_norm_x/cursor_norm_y (last touch point, normalized) and cursor_x/cursor_y (the same point in display pixels).",
     )
     put(
         "parameters",
@@ -237,11 +240,26 @@ private fun agentModeToolDefinition(): JSONObject = JSONObject().apply {
                     put("include_system", booleanProperty("For list_apps: whether to include system apps."))
                     put("max_results", integerProperty("For list_apps: maximum number of apps to return."))
                     put("target", stringProperty("For launch: package name or exact app label."))
-                    listOf("x", "y", "x1", "y1", "x2", "y2", "duration_ms").forEach { key ->
-                        put(key, integerProperty("Normalized coordinate or gesture duration for $key."))
+                    listOf("x", "y", "x1", "y1", "x2", "y2").forEach { key ->
+                        val axis = if (key.startsWith("x")) "width" else "height"
+                        put(
+                            key,
+                            integerProperty(
+                                "For ${if (key.length == 1) "tap" else "swipe"}: normalized $axis coordinate in 0..1000 " +
+                                    "(0 = left/top edge, 1000 = right/bottom edge), NOT screenshot or display pixels. " +
+                                    "Convert a screenshot pixel with pixel / image_$axis * 1000.",
+                            ),
+                        )
                     }
+                    put("duration_ms", integerProperty("For swipe: gesture duration in milliseconds (50..10000)."))
                     put("key", stringProperty("For key: Android key code name or number."))
-                    put("text", stringProperty("For text: text to type into the focused field."))
+                    put(
+                        "text",
+                        stringProperty(
+                            "For text: text to insert into the focused field; any Unicode (Chinese, emoji, ...) is supported. " +
+                                "Tap the field first and confirm it is focused. Fails if no window on the display has input focus.",
+                        ),
+                    )
                 },
             )
             put("required", JSONArray().put("action"))

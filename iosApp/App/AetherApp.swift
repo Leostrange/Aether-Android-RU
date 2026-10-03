@@ -15,6 +15,7 @@ private final class AetherAppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
+        IosAnalytics.shared.setListener(listener: AetherAnalytics.shared)
         AetherRuntimeHost.shared.registerBackgroundExecution()
         let domain = NSFileProviderDomain(identifier: NSFileProviderDomainIdentifier("com.baimoqilin.aether"), displayName: "Aether")
         NSFileProviderManager.add(domain) { error in

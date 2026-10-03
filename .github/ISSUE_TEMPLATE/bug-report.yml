@@ -1,84 +1,35 @@
-name: Bug report / 问题反馈
-description: Report a problem in Aether / 反馈 Aether 中的问题
-title: "[BUG] "
-labels:
-  - bug
-
+name: Ошибка
+description: Сообщить об ошибке в Aether Android RU
+title: '[BUG] '
+labels: [bug]
 body:
-  - type: checkboxes
-    id: preflight
-    attributes:
-      label: Before submitting / 提交前确认
-      options:
-        - label: I have read the documentation and found no relevant information. / 我已阅读文档，且未找到相关内容。
-          required: true
-        - label: I have searched existing issues and found no relevant issues. / 我已搜索过 Issue，且未找到相关内容。
-          required: true
-        - label: I have updated to the latest последней Android-сборки, and the bug still occurs. / 我已更新至最新 последней Android-сборки，且该 Bug 仍然存在。
-          required: true
-        - label: I have removed secrets and personal information. / 我已移除密钥和个人信息。
-          required: true
-
-  - type: dropdown
-    id: platform
-    attributes:
-      label: Target platform / 目标平台
-      description: Select all that apply. / 可多选。
-      multiple: true
-      options:
-        - Android
-    validations:
-      required: true
-
   - type: textarea
-    id: describe-bug
+    id: problem
     attributes:
-      label: Describe the bug / 描述 Bug
-      description: Describe what went wrong. / 描述发生的问题。
+      label: Что произошло
+      description: Опишите ошибку и ожидаемый результат.
     validations:
       required: true
-
-  - type: textarea
-    id: expected-behavior
-    attributes:
-      label: Expected behavior / 预期行为
-      description: Describe the expected result. / 描述预期结果。
-    validations:
-      required: true
-
   - type: textarea
     id: steps
     attributes:
-      label: To Reproduce / 复现步骤
-      description: Steps to reproduce the bug. / 复现 Bug 的步骤。
-
+      label: Как повторить
+      description: Перечислите шаги, которые приводят к ошибке.
+    validations:
+      required: true
   - type: textarea
     id: environment
     attributes:
-      label: Environment / 运行环境
-      description: Include relevant details only. / 只填写相关信息。
+      label: Устройство и версия
       value: |
-        - Aether version / Aether 版本:
-        - Device/model / 设备型号:
-        - OS version / 系统版本:
-        - LLM provider, model, or endpoint type (if relevant) / LLM 服务商、模型或端点类型（如相关）:
-        - Termux version (if relevant) / Termux 版本（如相关）:
+        Версия Aether:
+        Модель устройства:
+        Версия Android:
+        Провайдер и модель AI:
     validations:
       required: true
-
   - type: textarea
     id: logs
     attributes:
-      label: Logs or diagnostic output (optional) / 日志或诊断信息（可选）
-      description: Add logs or diagnostic output. / 添加日志或诊断信息。
-      render: shell
-    validations:
-      required: false
-
-  - type: textarea
-    id: additional-context
-    attributes:
-      label: Additional context (optional) / 补充信息（可选）
-      description: Screenshots, recordings, links, etc. / 截图、录屏、链接等。
-    validations:
-      required: false
+      label: Логи и скриншоты
+      description: Удалите API-ключи и личные данные перед публикацией.

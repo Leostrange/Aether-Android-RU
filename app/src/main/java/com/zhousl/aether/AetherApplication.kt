@@ -238,6 +238,22 @@ class AetherAppRuntime(
     )
 
     fun initialize() {
+        if (BuildConfig.SHOWCASE_MODE) {
+            appScope.launch {
+                val current = settingsRepository.settings.first()
+                settingsRepository.replaceImportedSettings(
+                    settings = current.copy(
+                        onboardingSeenVersion = com.zhousl.aether.data.CurrentOnboardingVersion,
+                        onboardingCompletedVersion = com.zhousl.aether.data.CurrentOnboardingVersion,
+                        defaultChatModelKey = "showcase-openai::gpt-6-astra",
+                        modelId = "gpt-6-astra", reasoningEffort = "low",
+                        keepTasksRunningInBackground = false, notifyOnTaskCompletion = false,
+                    ),
+                    providerConfigs = com.zhousl.aether.data.ShowcaseCatalog.providers(),
+                )
+            }
+            return
+        }
         diagnosticLogger.installUncaughtExceptionHandler()
         diagnosticLogger.event(
             category = "app",

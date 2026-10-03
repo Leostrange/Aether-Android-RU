@@ -201,12 +201,22 @@ class AetherViewModel(
 
     val uiState: StateFlow<AetherUiState> = _uiState.asStateFlow()
     val transientMessages = _transientMessages.asSharedFlow()
+    val showcaseStates = sessionExecutionManager.showcaseStates
+
+    fun replayShowcase(restoreOnly: Boolean = false) {
+        sessionExecutionManager.replayShowcase(_uiState.value.currentSessionId, restoreOnly)
+    }
+
+    fun pauseShowcase() = sessionExecutionManager.toggleShowcasePause(_uiState.value.currentSessionId)
+    fun setShowcaseSpeed(speed: Float) = sessionExecutionManager.setShowcaseSpeed(_uiState.value.currentSessionId, speed)
 
     init {
         registerCoreModServices()
-        refreshTermuxSetup()
-        refreshRootSetup()
-        refreshImportedPiExtensions()
+        if (!com.zhousl.aether.BuildConfig.SHOWCASE_MODE) {
+            refreshTermuxSetup()
+            refreshRootSetup()
+            refreshImportedPiExtensions()
+        }
 
         viewModelScope.launch {
             settingsRepository.initializeLanguageIfNeeded()
@@ -218,7 +228,7 @@ class AetherViewModel(
                     if (!current.isStartupRouteResolved) {
                         current.copy(
                             settings = settings,
-                            currentScreen = if (settings.shouldLaunchOnboarding()) {
+                            currentScreen = if (!com.zhousl.aether.BuildConfig.SHOWCASE_MODE && settings.shouldLaunchOnboarding()) {
                                 AppScreen.Onboarding
                             } else {
                                 AppScreen.Chat
@@ -2299,7 +2309,12 @@ class AetherViewModel(
             )
         }
         viewModelScope.launch {
-            navigatePiBranch(sessionId, piBranchMessageId, resetWhenMissing = true)
+            navigatePiBranch(
+                sessionId = sessionId,
+                aetherMessageId = piBranchMessageId,
+                settings = turnRequest.settings,
+                resetWhenMissing = true,
+            )
             sessionExecutionManager.startTurn(turnRequest)
         }
     }
@@ -2324,7 +2339,7 @@ class AetherViewModel(
                 it.id == messageId && it.author == MessageAuthor.User
             } ?: return@update current
             val userMessageIndex = session.messages.indexOfFirst { it.id == messageId }
-            piBranchMessageId = session.messages.take(userMessageIndex).lastOrNull()?.id
+            piBranchMessageId = session.messages.piBranchMessageIdBeforeUserAt(userMessageIndex)
 
             val retryMessage = userMessage.copy(
                 id = "user-${System.currentTimeMillis()}",
@@ -2381,7 +2396,12 @@ class AetherViewModel(
             )
         }
         viewModelScope.launch {
-            navigatePiBranch(sessionId, piBranchMessageId, resetWhenMissing = true)
+            navigatePiBranch(
+                sessionId = sessionId,
+                aetherMessageId = piBranchMessageId,
+                settings = turnRequest.settings,
+                resetWhenMissing = true,
+            )
             sessionExecutionManager.startTurn(turnRequest)
         }
     }
@@ -2389,9 +2409,9 @@ class AetherViewModel(
     private suspend fun navigatePiBranch(
         sessionId: String,
         aetherMessageId: String?,
+        settings: AppSettings,
         resetWhenMissing: Boolean = false,
     ) {
-        val settings = _uiState.value.settings
         val workspaceDirectory = workspaceFileBridge.workspaceDirectory(
             sessionId = sessionId,
             mode = settings.agentWorkspaceMode,
@@ -3808,7 +3828,7 @@ class AetherViewModel(
         }
 
         "app.notify" -> {
-            emitTransientMessage(UiText.Raw(args.optString("message")))
+            emitTransientMessage(UiText.Raw(extensionText(args.optString("message"), _uiState.value.settings.language)))
             JSONObject().put("notified", true)
         }
 
@@ -4055,6 +4075,10 @@ class AetherViewModel(
     private fun submitCurrentMessage(
         runningFollowUpMode: SessionFollowUpMode,
     ) {
+        if (com.zhousl.aether.BuildConfig.SHOWCASE_MODE) {
+            replayShowcase()
+            return
+        }
         val snapshot = _uiState.value
         if ("before_send" !in aetherAppExtensionManager.state.value.snapshot.eventNames) {
             submitCurrentMessageNow(runningFollowUpMode)
@@ -4208,9 +4232,7 @@ class AetherViewModel(
                     if (editingMessageIndex >= 0) {
                         isEditingExistingMessage = true
                         editedMessagePredecessorId = editingSession.messages
-                            .take(editingMessageIndex)
-                            .lastOrNull()
-                            ?.id
+                            .piBranchMessageIdBeforeUserAt(editingMessageIndex)
                         val branchedMessages = createEditedMessageBranch(
                             messages = editingSession.messages,
                             messageId = current.editingMessageId,
@@ -4334,6 +4356,7 @@ class AetherViewModel(
                 navigatePiBranch(
                     sessionId = targetSessionId,
                     aetherMessageId = editedMessagePredecessorId,
+                    settings = turnRequest.settings,
                     resetWhenMissing = true,
                 )
                 sessionExecutionManager.startTurn(turnRequest)

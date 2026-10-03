@@ -32,7 +32,9 @@ internal fun buildPiAgentInstructions(
     if (agentModeEnabled) {
         append(
             "\n\nAgent Mode is enabled for this chat. Use agent_display only when operating the isolated Android virtual display is required. " +
-                "Tap and swipe coordinates use the normalized 0..1000 range."
+                "Tap and swipe coordinates use the normalized 0..1000 range on each axis, not screenshot or display pixels: " +
+                "x = pixel_x / image_width * 1000, y = pixel_y / image_height * 1000. " +
+                "Before using text, tap the target field and confirm in the screenshot that it is focused."
         )
     }
     if (chromeEnabled) {

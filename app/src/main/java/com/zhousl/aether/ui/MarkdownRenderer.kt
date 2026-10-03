@@ -1100,7 +1100,7 @@ private fun MarkdownBitmapPreviewBlock(
     }
 }
 
-private sealed interface MarkdownHtmlTextVariant {
+internal sealed interface MarkdownHtmlTextVariant {
     data object Paragraph : MarkdownHtmlTextVariant
     data class Heading(val level: Int) : MarkdownHtmlTextVariant
     data object ListItem : MarkdownHtmlTextVariant
@@ -1262,6 +1262,18 @@ private fun parseMarkdown(markdown: String): List<MarkdownBlock> {
             } else {
                 MarkdownBlock.CodeFence(code)
             }
+            continue
+        }
+
+        val mathEnd = markdownDisplayMathBlockEnd(lines, index, MarkdownLine::text)
+        if (mathEnd != null) {
+            blocks += MarkdownBlock.Paragraph(
+                MarkdownSourceText(
+                    text = lines.subList(index, mathEnd + 1).joinToString("\n") { it.text },
+                    sourceOffset = line.startOffset,
+                ),
+            )
+            index = mathEnd + 1
             continue
         }
 
@@ -1465,6 +1477,7 @@ private fun beginsSpecialBlock(
     val line = lines.getOrNull(index)?.text ?: return false
     val trimmed = line.trim()
     return trimmed.startsWith("```") ||
+        markdownDisplayMathBlockEnd(lines, index, MarkdownLine::text) != null ||
         looksLikeMarkdownImageLine(trimmed) ||
         setextHeadingLevel(lines, index) != null ||
         looksLikeMarkdownTable(lines, index) ||
@@ -1610,7 +1623,7 @@ private data class MarkdownMathMatch(
     val endExclusive: Int,
 )
 
-private fun buildMarkdownTextHtml(
+internal fun buildMarkdownTextHtml(
     text: String,
     variant: MarkdownHtmlTextVariant,
 ): String {
@@ -1707,12 +1720,7 @@ private fun buildMarkdownTextHtml(
                     try {
                         if (window.renderMathInElement) {
                             window.renderMathInElement(document.body, {
-                                delimiters: [
-                                    { left: '$$', right: '$$', display: true },
-                                    { left: '\\\\[', right: '\\\\]', display: true },
-                                    { left: '$', right: '$', display: false },
-                                    { left: '\\\\(', right: '\\\\)', display: false }
-                                ],
+                                delimiters: $MarkdownMathDelimitersJson,
                                 throwOnError: false,
                                 strict: 'ignore',
                                 ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],

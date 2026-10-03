@@ -1,4 +1,5 @@
 import java.util.Properties
+import groovy.json.JsonOutput
 import com.posthog.android.PostHogCliExecTask
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.OutputDirectory
@@ -41,7 +42,7 @@ val appVersionName = providers.gradleProperty("aether.versionName")
     .orNull
     ?.trim()
     ?.takeIf { it.isNotEmpty() }
-    ?: "2.1.5"
+    ?: "2.1.6"
 val piBridgeProjectDir = rootProject.layout.projectDirectory.dir("pi-bridge")
 val piBridgeGeneratedAssetsDir = layout.buildDirectory.dir("generated/assets/piBridge")
 val preinstalledExtensionsDir = rootProject.layout.projectDirectory.dir("extensions")
@@ -113,7 +114,7 @@ android {
         // Alpine/Termux-style local runtimes install executable ELF files into app-private
         // storage. Android blocks execve() from that location for targetSdk >= 29.
         targetSdk = 28
-        versionCode = 10
+        versionCode = 11
         versionName = appVersionName
 
         ndk {
@@ -125,9 +126,12 @@ android {
             useSupportLibrary = true
         }
 
-        buildConfigField("String", "POSTHOG_API_KEY", "\"${localProperties.getProperty("posthog.apiKey", "")}\"")
-        buildConfigField("String", "POSTHOG_HOST", "\"${localProperties.getProperty("posthog.host", "https://us.i.posthog.com")}\"")
+        buildConfigField("String", "POSTHOG_API_KEY", JsonOutput.toJson(localOrEnv("posthog.apiKey", "POSTHOG_API_KEY")))
+        buildConfigField("String", "POSTHOG_HOST", JsonOutput.toJson(
+            localOrEnv("posthog.host", "POSTHOG_HOST").ifBlank { "https://us.i.posthog.com" },
+        ))
         buildConfigField("String", "UPDATE_CHANNEL", "\"stable\"")
+        buildConfigField("Boolean", "SHOWCASE_MODE", "false")
     }
 
     signingConfigs {
@@ -148,25 +152,21 @@ android {
 
     buildTypes {
         debug {
+            applicationIdSuffix = ".debug"
             manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
             manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_round"
             manifestPlaceholders["appLabel"] = "@string/app_name"
         }
 
-        create("nightly") {
+        create("demo") {
             initWith(getByName("debug"))
-            applicationIdSuffix = ".nightly"
+            applicationIdSuffix = ".showcase"
             matchingFallbacks += listOf("debug")
-            resValue("string", "nightly_app_name", "Aether Nightly")
-            buildConfigField("String", "UPDATE_CHANNEL", "\"nightly\"")
-            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_nightly"
-            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_nightly_round"
-            manifestPlaceholders["appLabel"] = "@string/nightly_app_name"
-            signingConfig = if (nightlyKeystoreFile.isNotBlank()) {
-                signingConfigs.getByName("nightly")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            resValue("string", "showcase_app_name", "Aether Showcase")
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
+            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_round"
+            manifestPlaceholders["appLabel"] = "@string/showcase_app_name"
+            buildConfigField("Boolean", "SHOWCASE_MODE", "true")
         }
 
         release {
@@ -179,6 +179,22 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+
+        create("nightly") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".nightly"
+            matchingFallbacks += listOf("release")
+            resValue("string", "nightly_app_name", "Aether Nightly")
+            buildConfigField("String", "UPDATE_CHANNEL", "\"nightly\"")
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_nightly"
+            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_nightly_round"
+            manifestPlaceholders["appLabel"] = "@string/nightly_app_name"
+            signingConfig = if (nightlyKeystoreFile.isNotBlank()) {
+                signingConfigs.getByName("nightly")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 
@@ -257,6 +273,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
     testImplementation(libs.junit4)
+    testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.squareup.okhttp.mockwebserver)
     testImplementation(libs.json)
     androidTestImplementation(libs.junit4)
@@ -339,9 +356,14 @@ val copyPiProviderIcons = tasks.register<SyncGeneratedSourceDirectory>("copyPiPr
 val copyPiBridgeAsset = tasks.register<SyncGeneratedSourceDirectory>("copyPiBridgeAsset") {
     dependsOn(buildPiBridge)
     outputDirectory.set(piBridgeGeneratedAssetsDir)
-    from(piBridgeProjectDir.file("dist/bridge.mjs"))
-    eachFile {
-        path = "pi-bridge/$path"
+    from(piBridgeProjectDir.file("dist/bridge.mjs")) {
+        into("pi-bridge")
+    }
+    from(piBridgeProjectDir.file("dist/image-resize-worker.js")) {
+        into("pi-bridge")
+    }
+    from(piBridgeProjectDir.file("dist/photon_rs_bg.wasm")) {
+        into("pi-bridge")
     }
     includeEmptyDirs = false
 }

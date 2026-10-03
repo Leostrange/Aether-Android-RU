@@ -1,0 +1,84 @@
+{
+  "provenance": "Fictional offline film fixtures, not measured model benchmarks or executed tasks.",
+  "tasks": [
+    {
+      "task": "website",
+      "model": "GPT-6 Astra Light",
+      "seconds": 222,
+      "toolCalls": 27,
+      "androidOnly": false
+    },
+    {
+      "task": "screenshots",
+      "model": "GPT-6 Astra Light",
+      "seconds": 378,
+      "toolCalls": 63,
+      "androidOnly": false
+    },
+    {
+      "task": "research",
+      "model": "GPT-6 Astra Light",
+      "seconds": 1361,
+      "toolCalls": 247,
+      "androidOnly": false
+    },
+    {
+      "task": "readest",
+      "model": "GPT-6 Astra Light",
+      "seconds": 446,
+      "toolCalls": 41,
+      "androidOnly": true
+    },
+    {
+      "task": "book",
+      "model": "GPT-6 Astra Light",
+      "seconds": 832,
+      "toolCalls": 132,
+      "androidOnly": false
+    },
+    {
+      "task": "extension",
+      "model": "GPT-6 Astra Light",
+      "seconds": 487,
+      "toolCalls": 76,
+      "androidOnly": false
+    },
+    {
+      "task": "agentmode",
+      "model": "GPT-6 Astra Light",
+      "seconds": 94,
+      "toolCalls": 16,
+      "androidOnly": false
+    }
+  ],
+  "websiteFollowups": [
+    {
+      "seconds": 74,
+      "toolCalls": 12
+    },
+    {
+      "seconds": 111,
+      "toolCalls": 18
+    },
+    {
+      "seconds": 128,
+      "toolCalls": 23
+    },
+    {
+      "seconds": 96,
+      "toolCalls": 17
+    },
+    {
+      "seconds": 67,
+      "toolCalls": 11
+    },
+    {
+      "seconds": 214,
+      "toolCalls": 38
+    },
+    {
+      "seconds": 132,
+      "toolCalls": 24
+    }
+  ]
+}

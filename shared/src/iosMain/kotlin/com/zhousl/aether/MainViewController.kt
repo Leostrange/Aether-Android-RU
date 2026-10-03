@@ -1,6 +1,7 @@
 package com.zhousl.aether
 
 import androidx.compose.ui.window.ComposeUIViewController
+import androidx.compose.ui.uikit.OnFocusBehavior
 import com.zhousl.aether.platform.currentPlatformCapabilities
 import com.zhousl.aether.runtime.IosAlpineRuntime
 import com.zhousl.aether.runtime.NativeRuntimeHost
@@ -15,7 +16,10 @@ fun MainViewController(runtimeHost: NativeRuntimeHost): platform.UIKit.UIViewCon
     val settingsStore = createIosAetherSettingsStore()
     val chatHistoryDatabase = createIosAetherChatHistoryDatabase()
     val platformServices = IosPlatformServices(runtimeHost)
-    return ComposeUIViewController {
+    return ComposeUIViewController(configure = {
+        // Chat handles IME insets locally; never pan the entire iPad split layout.
+        onFocusBehavior = OnFocusBehavior.DoNothing
+    }) {
         IosComposeApp(
             runtime = runtime,
             capabilities = currentPlatformCapabilities,
