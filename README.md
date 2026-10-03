@@ -54,7 +54,7 @@
 
 ```bash
 ./gradlew :shared:testDebugUnitTest :app:testDebugUnitTest :app:assembleDebug \
-  --no-daemon --max-workers=2 -Paether.versionName=2.1.6-ru-sync
+  --no-daemon --max-workers=2 -Paether.versionName=2.1.7-ru
 ```
 
 В Windows используйте `gradlew.bat` вместо `./gradlew`. APK: `app/build/outputs/apk/debug/app-debug.apk`.

@@ -40,7 +40,7 @@
 
 ---
 
-## 🌪️ Aether 
+## 🌪️ Aether
 
 > "When the great Peng bird journeys to the Southern Ocean, it flaps the water for three thousand miles, spiraling upward on a whirlwind (*Aether/Fuyao*) to ninety thousand miles, and travels for six months before resting."
 
