@@ -105,6 +105,16 @@ internal fun AndroidAlpineFileManagerScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val fileManagerLoadDirectoryFailed = stringResource(R.string.file_manager_load_directory_failed)
+    val fileManagerImportSelectedItemFailed = stringResource(R.string.file_manager_import_selected_item_failed)
+    val fileManagerDownloadFileFailed = stringResource(R.string.file_manager_download_file_failed)
+    // Resolve UI fallbacks in composition; coroutines retain the original diagnostic when available.
+    val fileManagerOpenFileFailed = stringResource(R.string.file_manager_open_file_failed)
+    val fileManagerSaveFileFailed = stringResource(R.string.file_manager_save_file_failed)
+    val fileManagerOpenSelectedItemFailed = stringResource(R.string.file_manager_open_selected_item_failed)
+    val fileManagerOpenDownloadLocationFailed = stringResource(R.string.file_manager_open_download_location_failed)
+    val fileOperationFailed = stringResource(R.string.file_manager_operation_failed)
+
     var path by remember { mutableStateOf("/") }
     var entries by remember { mutableStateOf<List<AndroidAlpineFileEntry>>(emptyList()) }
     var loading by remember { mutableStateOf(false) }
@@ -130,7 +140,7 @@ internal fun AndroidAlpineFileManagerScreen(
         scope.launch {
             runCatching { runtime.listDirectory(requestedPath) }
                 .onSuccess { if (path == requestedPath) entries = it }
-                .onFailure { error = it.message ?: "Unable to load directory." }
+                .onFailure { error = it.message ?: fileManagerLoadDirectoryFailed }
             if (path == requestedPath) loading = false
         }
     }
@@ -152,10 +162,10 @@ internal fun AndroidAlpineFileManagerScreen(
                         DocumentFile.fromTreeUri(context, uri)
                     } else {
                         DocumentFile.fromSingleUri(context, uri)
-                    } ?: error("Unable to open the selected item.")
+                    } ?: error(fileManagerOpenSelectedItemFailed)
                     importAndroidDocument(context, runtime, path, document)
                 }
-            }.onFailure { error = it.message ?: "Unable to import the selected item." }
+            }.onFailure { error = it.message ?: fileManagerImportSelectedItemFailed }
             refresh()
         }
     }
@@ -178,11 +188,11 @@ internal fun AndroidAlpineFileManagerScreen(
                     loading = true
                     runCatching {
                         val output = context.contentResolver.openOutputStream(uri, "w")
-                            ?: error("Unable to open the selected download location.")
+                            ?: error(fileManagerOpenDownloadLocationFailed)
                         output.use { runtime.exportFile(entry.path, it) }
                     }.onFailure { failure ->
                         runCatching { context.contentResolver.delete(uri, null, null) }
-                        error = failure.message ?: "Unable to download the file."
+                        error = failure.message ?: fileManagerDownloadFileFailed
                     }
                     loading = false
                 }
@@ -208,7 +218,7 @@ internal fun AndroidAlpineFileManagerScreen(
                         editorFile = entry
                     }
                 }
-                .onFailure { error = it.message ?: "Unable to open file." }
+                .onFailure { error = it.message ?: fileManagerOpenFileFailed }
         }
     }
 
@@ -237,7 +247,7 @@ internal fun AndroidAlpineFileManagerScreen(
                 val target = editorFile ?: return@SoraEditorScreen
                 scope.launch {
                     runCatching { runtime.fileSystem.write(target.path, content.encodeToByteArray()) }
-                        .onFailure { error = it.message ?: "Unable to save file." }
+                        .onFailure { error = it.message ?: fileManagerSaveFileFailed }
                 }
             },
             onBack = { editorFile = null },
@@ -447,12 +457,12 @@ internal fun AndroidAlpineFileManagerScreen(
                                 when (operation) {
                                     AndroidFileDialog.NewFile -> {
                                         val target = joinAndroidFilePath(path, name)
-                                        require(!runtime.fileSystem.exists(target)) { "An item named $name already exists." }
+                                        require(!runtime.fileSystem.exists(target)) { context.getString(R.string.file_manager_named_item_exists, name) }
                                         runtime.fileSystem.write(target, ByteArray(0))
                                     }
                                     AndroidFileDialog.NewFolder -> {
                                         val target = joinAndroidFilePath(path, name)
-                                        require(!runtime.fileSystem.exists(target)) { "An item named $name already exists." }
+                                        require(!runtime.fileSystem.exists(target)) { context.getString(R.string.file_manager_named_item_exists, name) }
                                         runtime.fileSystem.createDirectories(target)
                                     }
                                     AndroidFileDialog.Rename -> {
@@ -462,7 +472,7 @@ internal fun AndroidAlpineFileManagerScreen(
                                     AndroidFileDialog.Delete -> runtime.fileSystem.remove(item!!.path, recursive = item.isDirectory)
                                     AndroidFileDialog.None -> Unit
                                 }
-                            }.onFailure { error = it.message ?: "File operation failed." }
+                            }.onFailure { error = it.message ?: fileOperationFailed }
                             selected = null
                             refresh()
                         }
@@ -588,6 +598,7 @@ private fun SoraEditorScreen(
 
 private val androidImageExtensions = setOf("png", "jpg", "jpeg", "gif", "webp", "bmp")
 
+/** Copies an Android document tree into Alpine, reporting localized validation errors and rolling back a failed directory import. */
 private suspend fun importAndroidDocument(
     context: Context,
     runtime: AndroidAlpineFileManagerRuntime,
@@ -595,13 +606,13 @@ private suspend fun importAndroidDocument(
     document: DocumentFile,
 ) {
     val name = document.name?.trim().orEmpty()
-    require(validAndroidFileName(name)) { "The selected item has an invalid name." }
+    require(validAndroidFileName(name)) { context.getString(R.string.file_manager_invalid_item_name) }
     val target = joinAndroidFilePath(parentPath, name)
-    require(!runtime.fileSystem.exists(target)) { "An item named $name already exists." }
+    require(!runtime.fileSystem.exists(target)) { context.getString(R.string.file_manager_named_item_exists, name) }
 
     if (!document.isDirectory) {
         val input = context.contentResolver.openInputStream(document.uri)
-            ?: error("Unable to read $name.")
+            ?: error(context.getString(R.string.file_manager_read_named_item_failed, name))
         input.use { runtime.importFile(target, it) }
         return
     }
@@ -617,12 +628,15 @@ private suspend fun importAndroidDocument(
     }
 }
 
+/** Rejects empty, parent-relative, and slash-containing names before creating or importing Alpine files. */
 private fun validAndroidFileName(name: String): Boolean =
     name.trim().let { it.isNotEmpty() && it != "." && it != ".." && '/' !in it }
 
+/** Builds a child path without duplicating the separator at the Alpine filesystem root. */
 private fun joinAndroidFilePath(parent: String, name: String): String =
     if (parent == "/") "/$name" else "${parent.trimEnd('/')}/$name"
 
+/** Formats byte counts into compact binary-size units for the Android file list. */
 private fun formatAndroidFileSize(bytes: Long): String {
     if (bytes < 1024) return "$bytes B"
     val units = arrayOf("KB", "MB", "GB", "TB")

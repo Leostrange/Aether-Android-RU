@@ -1046,10 +1046,20 @@
     <string name="file_manager_delete_folder_warning">Папка и всё её содержимое будут удалены без возможности восстановления.</string>
     <string name="file_manager_delete_item_warning">Этот элемент будет удалён без возможности восстановления.</string>
     <string name="file_manager_decode_image_failed">Не удалось открыть изображение</string>
-    <string name="file_manager_operation_failed">Не удалось выполнить операцию с файлом</string>
+    <string name="file_manager_operation_failed">Не удалось выполнить операцию с файлом.</string>
     <string name="file_manager_toggle_line_wrap">Перенос строк</string>
     <string name="file_manager_save">Сохранить</string>
     <string name="file_manager_sort_name">имени</string>
     <string name="file_manager_sort_date">дате</string>
     <string name="file_manager_sort_size">размеру</string>
+    <string name="file_manager_load_directory_failed">Не удалось загрузить содержимое папки.</string>
+    <string name="file_manager_import_selected_item_failed">Не удалось импортировать выбранный объект.</string>
+    <string name="file_manager_download_file_failed">Не удалось скачать файл.</string>
+    <string name="file_manager_open_file_failed">Не удалось открыть файл.</string>
+    <string name="file_manager_save_file_failed">Не удалось сохранить файл.</string>
+    <string name="file_manager_open_selected_item_failed">Не удалось открыть выбранный объект.</string>
+    <string name="file_manager_open_download_location_failed">Не удалось открыть выбранное место сохранения.</string>
+    <string name="file_manager_invalid_item_name">У выбранного объекта недопустимое имя.</string>
+    <string name="file_manager_named_item_exists">Объект с именем %1$s уже существует.</string>
+    <string name="file_manager_read_named_item_failed">Не удалось прочитать %1$s.</string>
 </resources>
