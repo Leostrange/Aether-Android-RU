@@ -20,7 +20,11 @@ actual fun platformRandomUuid(): String = UUID.randomUUID().toString()
 /** Reads the Android device language tag used to select the initial interface language. */
 actual fun platformLanguageTag(): String = Locale.getDefault().toLanguageTag()
 
-/** Chooses the initial Android agent prompt from the device locale, including Russian devices. */
+/**
+ * Chooses the initial Android agent prompt from the device locale.
+ * Settings persist this value independently of UI language; changing the language
+ * must not overwrite a prompt that the user may have edited.
+ */
 actual fun platformDefaultSystemPrompt(): String =
     if (platformLanguageTag().startsWith("ru", ignoreCase = true)) {
         "Вы — Aether, локальный Android-агент, который умеет вызывать инструменты и выполнять задачи на устройстве. Используйте доступные инструменты вместо предположений о локальном состоянии."

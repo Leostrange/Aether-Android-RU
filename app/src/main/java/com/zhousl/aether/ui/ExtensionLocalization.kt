@@ -35,7 +35,11 @@ internal fun extensionText(value: String, language: AppLanguage): String {
     return russianExtensionText(value)
 }
 
-/** Looks up Russian translations for builtin extension labels without altering unrecognized strings. */
+/**
+ * Matches builtin display strings exactly, leaving custom extension text unchanged.
+ * Upstream label changes require updating this table; stable translation IDs would
+ * require a separate extension API change.
+ */
 private fun russianExtensionText(value: String): String = when (value) {
     "Web Access" -> "Веб-доступ"
     "Search, source verification, extraction, and provider routing" -> "Поиск, проверка источников, извлечение данных и маршрутизация провайдеров"

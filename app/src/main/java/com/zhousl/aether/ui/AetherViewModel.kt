@@ -4073,6 +4073,7 @@ class AetherViewModel(
         }
     }
 
+    /** Dispatches before-send extension hooks, preserving unknown cancellation reasons and translating known UI messages. */
     private fun submitCurrentMessage(
         runningFollowUpMode: SessionFollowUpMode,
     ) {
@@ -4114,7 +4115,7 @@ class AetherViewModel(
             ).getOrNull()
             if (eventResult?.cancelled == true) {
                 eventResult.reason.takeIf(String::isNotBlank)?.let { reason ->
-                    emitTransientMessage(UiText.Raw(reason))
+                    emitTransientMessage(UiText.Raw(extensionText(reason, _uiState.value.settings.language)))
                 }
                 return@launch
             }

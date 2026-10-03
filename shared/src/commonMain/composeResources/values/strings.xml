@@ -1073,4 +1073,14 @@
     <string name="file_manager_sort_name">name</string>
     <string name="file_manager_sort_date">date</string>
     <string name="file_manager_sort_size">size</string>
+    <string name="file_manager_load_directory_failed">Unable to load directory.</string>
+    <string name="file_manager_import_selected_item_failed">Unable to import the selected item.</string>
+    <string name="file_manager_download_file_failed">Unable to download the file.</string>
+    <string name="file_manager_open_file_failed">Unable to open file.</string>
+    <string name="file_manager_save_file_failed">Unable to save file.</string>
+    <string name="file_manager_open_selected_item_failed">Unable to open the selected item.</string>
+    <string name="file_manager_open_download_location_failed">Unable to open the selected download location.</string>
+    <string name="file_manager_invalid_item_name">The selected item has an invalid name.</string>
+    <string name="file_manager_named_item_exists">An item named %1$s already exists.</string>
+    <string name="file_manager_read_named_item_failed">Unable to read %1$s.</string>
 </resources>
