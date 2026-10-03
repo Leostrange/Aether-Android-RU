@@ -337,6 +337,7 @@ private val StatisticsNeutralChartColor = Color(0xFFDCE4FF)
 
 
 
+/** Returns the localized display name for each selectable Android interface language. */
 @Composable
 private fun settingsLanguageDisplayName(language: AppLanguage): String = when (language) {
     AppLanguage.English -> stringResource(R.string.language_english)
@@ -345,6 +346,7 @@ private fun settingsLanguageDisplayName(language: AppLanguage): String = when (l
     AppLanguage.Russian -> stringResource(R.string.language_russian)
 }
 
+/** Returns the localized description of the selected interface language. */
 @Composable
 private fun settingsLanguageSubtitle(language: AppLanguage): String = when (language) {
     AppLanguage.English -> stringResource(R.string.settings_language_english_interface)
@@ -1331,6 +1333,7 @@ fun SettingsScreen(
 // Hub
 // -----------------------------------------------------------------------------
 
+/** Displays Android settings categories and language-aware titles for registered extension pages. */
 @Composable
 private fun SettingsHub(
     generalSettingsSummary: String,
@@ -3008,6 +3011,7 @@ private fun ReliabilityPage(
     }
 }
 
+/** Displays an extension settings page and its categories using the selected Android language. */
 @Composable
 private fun AetherExtensionSettingsCategoriesPage(
     page: com.zhousl.aether.data.AetherAppExtensionSettingsPage,
@@ -3052,6 +3056,7 @@ private fun AetherExtensionSettingsCategoriesPage(
     }
 }
 
+/** Renders extension section headings and controls, translating display strings but preserving identifiers. */
 @Composable
 private fun AetherExtensionSettingsSections(
     sections: List<JSONObject>,
@@ -3139,6 +3144,7 @@ private fun AetherExtensionSettingsSections(
     }
 }
 
+/** Renders a schema-defined Android setting with localized labels and unchanged option values and action arguments. */
 @Composable
 private fun AetherExtensionControlRow(
     setting: JSONObject,
@@ -3564,6 +3570,7 @@ private fun AetherExtensionItemCard(
     }
 }
 
+/** Displays localized empty-state text and forwards its button action to the owning extension. */
 @Composable
 private fun AetherExtensionEmptyState(
     setting: JSONObject,
@@ -3617,6 +3624,7 @@ private fun AetherExtensionEmptyState(
     }
 }
 
+/** Displays a selected extension category with localized headings and its original settings schema. */
 @Composable
 private fun AetherExtensionSettingsPage(
     page: com.zhousl.aether.data.AetherAppExtensionSettingsPage,
@@ -3651,12 +3659,14 @@ private fun AetherExtensionSettingsPage(
     }
 }
 
+/** Resolves known builtin extension text using the language provided by the Android theme. */
 @Composable
 private fun localizedExtensionText(value: String): String {
     return extensionText(value, LocalAetherLanguage.current)
 }
 
 
+/** Resolves a schema icon name while allowing an extension to hide its trailing action. */
 private fun settingsTrailingIcon(name: String): ImageVector? {
     if (name.isBlank()) return null
     return when (name.lowercase()) {

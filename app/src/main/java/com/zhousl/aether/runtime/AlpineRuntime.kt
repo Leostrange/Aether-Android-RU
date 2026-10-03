@@ -1,6 +1,7 @@
 package com.zhousl.aether.runtime
 
 import android.content.Context
+import android.net.ConnectivityManager
 import android.net.TrafficStats
 import android.os.Build
 import com.zhousl.aether.data.AetherDiagnosticLogger
@@ -1129,17 +1130,26 @@ class AlpineRuntime(
         hostTmpDir.mkdirs()
     }
 
+    /**
+     * Refreshes Alpine's resolver before process startup so VPN or network changes do
+     * not leave Node OAuth using the rootfs's hardcoded public DNS servers.
+     */
+    @Synchronized
     private fun ensureGuestNetworkConfig() {
+        val connectivity = appContext.getSystemService(ConnectivityManager::class.java)
+        val dnsServers = try {
+            connectivity?.activeNetwork?.let { network ->
+                connectivity.getLinkProperties(network)?.dnsServers
+            }.orEmpty().mapNotNull { it.hostAddress }
+        } catch (_: SecurityException) {
+            // Older installed manifests may lack ACCESS_NETWORK_STATE during migration.
+            emptyList()
+        }
         val resolvConf = File(rootfsDir, "etc/resolv.conf")
-        if (!resolvConf.isFile || resolvConf.length() == 0L) {
+        val configuration = alpineResolverConfiguration(dnsServers)
+        if (!resolvConf.isFile || resolvConf.readText() != configuration) {
             resolvConf.parentFile?.mkdirs()
-            resolvConf.writeText(
-                """
-                nameserver 1.1.1.1
-                nameserver 8.8.8.8
-                options timeout:2 attempts:2
-                """.trimIndent() + "\n"
-            )
+            resolvConf.writeText(configuration)
             resolvConf.setReadable(true, false)
             resolvConf.setWritable(true, true)
         }

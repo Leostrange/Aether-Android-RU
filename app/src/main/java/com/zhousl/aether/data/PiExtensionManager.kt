@@ -1160,6 +1160,7 @@ internal data class NpmInstallPlan(
     val command: String,
 )
 
+/** Chooses npm ci for locked packages and npm install otherwise, with bounded fetch retries for Android runtime downloads. */
 internal fun npmInstallPlanForPackage(packageRoot: File): NpmInstallPlan? {
     if (File(packageRoot, "node_modules").isDirectory) return null
     val manifest = runCatching {

@@ -14,7 +14,7 @@
     <string name="shared_extensions_script_resources">Расширения Pi: %1$d · Расширения пользовательского интерфейса Aether: %2$d · Навыки: %3$d · Подсказки: %4$d · Темы: %5$d</string>
     <string name="shared_extensions_loaded_entries">%1$d загружено записей</string>
     <string name="shared_extensions_pi_entries_label">Расширения Pi</string>
-    <string name="shared_extensions_aether_entries_label">Aether Расширения пользовательского интерфейса</string>
+    <string name="shared_extensions_aether_entries_label">Расширения пользовательского интерфейса Aether</string>
     <string name="shared_extensions_skills_label">Навыки</string>
     <string name="shared_extensions_prompts_label">Подсказки</string>
     <string name="shared_extensions_themes_label">Темы</string>

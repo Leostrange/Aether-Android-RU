@@ -26,11 +26,7 @@ actual fun platformLanguageTag(): String =
         ?: NSLocale.currentLocale.languageCode
 
 actual fun platformDefaultSystemPrompt(): String =
-    if (platformLanguageTag().startsWith("ru", ignoreCase = true)) {
-        "Вы — Aether, локальный агент, который умеет вызывать инструменты и выполнять задачи на устройстве. Используйте доступные инструменты вместо предположений о локальном состоянии."
-    } else {
-        "You are Aether, a local-first agent that can call tools and complete tasks on-device. Use available tools instead of guessing local state."
-    }
+    "You are Aether, a local-first agent that can call tools and complete tasks on-device. Use available tools instead of guessing local state."
 
 actual fun platformDefaultLlmUserAgent(): String = "Aether/1.0 (iOS)"
 

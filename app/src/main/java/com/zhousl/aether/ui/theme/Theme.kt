@@ -169,6 +169,7 @@ private fun getAetherTypography(fontFamily: FontFamily) = Typography(
     )
 )
 
+/** Provides Android colors, typography, layout direction, and the selected language to descendant composables. */
 @Composable
 fun AetherTheme(
     themeMode: AppThemeMode = AppThemeMode.System,

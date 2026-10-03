@@ -133,7 +133,6 @@ internal fun SharedAetherTheme(
         LayoutDirection.Ltr
     }
     CompositionLocalProvider(
-        LocalAetherLanguage provides language,
         LocalLayoutDirection provides layoutDirection,
         LocalReduceMotion provides accessibility.reduceMotion,
     ) {

@@ -237,6 +237,7 @@ fun defaultAppLanguage(): AppLanguage {
     return appLanguageForTag(platformLanguageTag())
 }
 
+/** Maps language tags, including Russian regional tags, to the corresponding interface language. */
 fun appLanguageForTag(languageTag: String): AppLanguage = when {
     languageTag.startsWith("zh", ignoreCase = true) -> AppLanguage.SimplifiedChinese
     languageTag.startsWith("fa", ignoreCase = true) -> AppLanguage.Persian

@@ -2614,7 +2614,7 @@ fun IosComposeApp(
                         buildJsonObject { put("opened", screen) }
                     }
                     "app.notify" -> withContext(Dispatchers.Main) {
-                        transientMessage = extensionText(args["message"]?.jsonPrimitive?.contentOrNull.orEmpty(), sharedAppSettings.language)
+                        transientMessage = args["message"]?.jsonPrimitive?.contentOrNull.orEmpty()
                         buildJsonObject { put("notified", transientMessage.isNotBlank()) }
                     }
                     "settings.get" -> withContext(Dispatchers.Main) {
@@ -7469,7 +7469,7 @@ private fun SharedComposerPlusMenu(
                             .orEmpty()
                             .forEach { item ->
                                 SharedComposerPlusMenuRow(
-                                      title = extensionComposerMenuTitle(item.localId, item.title, LocalAetherLanguage.current),
+                                    title = item.title,
                                     icon = Icons.Rounded.Extension,
                                     iconTint = AetherPrimary,
                                     selected = item.selected,
@@ -8759,27 +8759,27 @@ internal fun buildNativeSettingsSnapshot(
                 put("settingsId", page.localId)
                 put("extensionId", page.extensionId)
                 put("extensionName", page.extensionName)
-                put("title", extensionText(page.title, settings.language))
-                put("subtitle", extensionText(page.subtitle, settings.language))
+                put("title", page.title)
+                put("subtitle", page.subtitle)
                 put("icon", page.icon)
                 put("trailingIcon", page.trailingIcon)
                 put("trailingAction", page.trailingAction)
                 put("trailingCategory", page.trailingCategory)
                 put("trailingArgs", page.trailingArgs)
-                put("sections", localizeExtensionSettings(JsonArray(page.sections), settings.language))
+                put("sections", JsonArray(page.sections))
                 put("categories", buildJsonArray {
                     page.categories.sortedBy { it.order }.forEach { category ->
                         add(buildJsonObject {
                             put("id", category.id)
-                            put("title", extensionText(category.title, settings.language))
-                            put("subtitle", extensionText(category.subtitle, settings.language))
+                            put("title", category.title)
+                            put("subtitle", category.subtitle)
                             put("icon", category.icon)
                             put("trailingIcon", category.trailingIcon)
                             put("trailingAction", category.trailingAction)
                             put("trailingCategory", category.trailingCategory)
                             put("trailingArgs", category.trailingArgs)
                             put("hidden", category.hidden)
-                            put("sections", localizeExtensionSettings(JsonArray(category.sections), settings.language))
+                            put("sections", JsonArray(category.sections))
                         })
                     }
                 })

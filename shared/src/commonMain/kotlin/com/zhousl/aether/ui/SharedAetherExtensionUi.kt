@@ -259,7 +259,7 @@ private fun SharedAetherExtensionNode(
 
     when (type) {
         "text", "code" -> Text(
-            text = if (type == "code") node.string("text") else extensionText(node.string("text"), LocalAetherLanguage.current),
+            text = node.string("text"),
             modifier = clickable,
             color = node.string("color").takeIf(String::isNotBlank)?.let { extensionColor(it) }
                 ?: AetherOnSurface,
@@ -316,7 +316,7 @@ private fun SharedAetherExtensionNode(
                 Icon(extensionIcon(it), null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
             }
-            Text(extensionText(node.string("label").ifBlank { node.string("text") }, LocalAetherLanguage.current), maxLines = 1)
+            Text(node.string("label").ifBlank { node.string("text") }, maxLines = 1)
         }
         "iconbutton" -> IconButton(
             onClick = { if (action.isNotBlank()) controller.onAction(extensionId, action, args) },

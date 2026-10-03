@@ -27,35 +27,6 @@ import kotlin.test.assertTrue
 
 class NativeSettingsBridgeTest {
     @Test
-    fun extensionSettingsUseSelectedLanguageWithoutChangingIdentifiers() {
-        val extensions = SharedAetherExtensionSnapshot(settings = listOf(
-            SharedAetherExtensionSettingsPage(
-                id = "web:settings",
-                localId = "settings",
-                extensionId = "web",
-                extensionName = "Web",
-                title = "Web Access",
-                subtitle = "",
-                icon = "auto",
-                order = 0,
-                sections = emptyList(),
-            ),
-        ))
-        AppLanguage.entries.forEach { language ->
-            val snapshot = Json.parseToJsonElement(buildNativeSettingsSnapshot(
-                settings = AppSettings(language = language),
-                providerConfigs = emptyList(),
-                installedSkills = emptyList(),
-                extensionSnapshot = extensions,
-                capabilities = PlatformCapabilities.Ios,
-            )).jsonObject
-            val page = snapshot["extensionSettings"]!!.jsonArray.single().jsonObject
-            assertEquals("web:settings", page["id"]!!.jsonPrimitive.content)
-            assertEquals(if (language == AppLanguage.Russian) "Веб-доступ" else "Web Access", page["title"]!!.jsonPrimitive.content)
-        }
-    }
-
-    @Test
     fun providerResultsCarryRequestAndSessionIdentityWithoutRequiringAuthentication() {
         val snapshot = Json.parseToJsonElement(buildNativeSettingsSnapshot(
             settings = AppSettings(),

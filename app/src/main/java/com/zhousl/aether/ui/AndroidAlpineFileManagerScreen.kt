@@ -97,6 +97,7 @@ import kotlinx.coroutines.launch
 private enum class AndroidFileDialog { None, NewFile, NewFolder, Rename, Delete }
 private enum class AndroidFileSort { Name, Date, Size }
 
+/** Displays Alpine files on Android with localized controls and delegates filesystem operations to the runtime. */
 @Composable
 internal fun AndroidAlpineFileManagerScreen(
     runtime: AndroidAlpineFileManagerRuntime,
@@ -488,6 +489,7 @@ internal fun AndroidAlpineFileManagerScreen(
     }
 }
 
+/** Displays a file row with localized accessibility labels for opening its actions. */
 @Composable
 private fun AndroidFileListItem(entry: AndroidAlpineFileEntry, onOpen: () -> Unit, onMore: () -> Unit) {
     Row(
@@ -504,6 +506,7 @@ private fun AndroidFileListItem(entry: AndroidAlpineFileEntry, onOpen: () -> Uni
     }
 }
 
+/** Displays a file tile with localized accessibility labels for opening its actions. */
 @Composable
 private fun AndroidFileGridItem(entry: AndroidAlpineFileEntry, onOpen: () -> Unit, onMore: () -> Unit) {
     Column(
@@ -519,6 +522,7 @@ private fun AndroidFileGridItem(entry: AndroidAlpineFileEntry, onOpen: () -> Uni
     }
 }
 
+/** Edits an Alpine text file with localized navigation, wrapping, and save controls. */
 @Composable
 private fun SoraEditorScreen(
     entry: AndroidAlpineFileEntry,

@@ -11,6 +11,7 @@ class PiExtensionImportTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
+    /** Verifies that imported locked packages use npm ci with the Android download retry policy. */
     @Test
     fun usesNpmCiWhenImportedPackageHasLockfile() {
         val packageRoot = temporaryFolder.newFolder("locked")
@@ -23,6 +24,7 @@ class PiExtensionImportTest {
         )
     }
 
+    /** Verifies that unlocked runtime packages use npm install with the same retry policy. */
     @Test
     fun usesNpmInstallWithoutLockfile() {
         val packageRoot = temporaryFolder.newFolder("unlocked")

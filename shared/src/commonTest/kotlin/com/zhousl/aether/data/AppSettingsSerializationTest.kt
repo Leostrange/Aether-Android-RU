@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class AppSettingsSerializationTest {
+    /** Verifies Russian language persistence and detection of Russian regional and uppercase tags. */
     @Test
     fun russianLanguageRoundTripsAndMatchesRegionalTags() {
         val settings = AppSettings(language = AppLanguage.Russian)

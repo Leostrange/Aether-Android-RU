@@ -2373,6 +2373,7 @@ private fun ConversationComposerOverlay(
     }
 }
 
+/** Renders the Android chat input and attachment menu, localizing builtin extension titles without changing their actions. */
 @Composable
 private fun ConversationComposerBar(
     modifier: Modifier = Modifier,

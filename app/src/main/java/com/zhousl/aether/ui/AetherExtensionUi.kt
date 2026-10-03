@@ -367,6 +367,7 @@ private fun AetherExtensionView(
     }
 }
 
+/** Renders Android extension nodes, translating display text for the selected app language while preserving code and action payloads. */
 @Composable
 @OptIn(ExperimentalLayoutApi::class)
 private fun AetherExtensionNode(

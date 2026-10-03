@@ -2,15 +2,12 @@ package com.zhousl.aether.ui
 
 import com.zhousl.aether.data.AppLanguage
 import androidx.compose.runtime.staticCompositionLocalOf
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.contentOrNull
 
-val LocalAetherLanguage = staticCompositionLocalOf { AppLanguage.English }
+/** Supplies the language selected by the Android settings to native extension UI. */
+internal val LocalAetherLanguage = staticCompositionLocalOf { AppLanguage.English }
 
-fun extensionComposerMenuTitle(localId: String, title: String, language: AppLanguage): String =
+/** Translates the two builtin composer entries only for Russian and preserves other extension titles. */
+internal fun extensionComposerMenuTitle(localId: String, title: String, language: AppLanguage): String =
     if (language == AppLanguage.Russian) {
         when (localId) {
             "subagents" -> "Субагенты"
@@ -22,7 +19,8 @@ fun extensionComposerMenuTitle(localId: String, title: String, language: AppLang
     }
 
 
-fun extensionText(value: String, language: AppLanguage): String {
+/** Translates known extension display text for Russian, preserving unknown text and interpolated error details. */
+internal fun extensionText(value: String, language: AppLanguage): String {
     if (language != AppLanguage.Russian) return value
     val prefix = "Web Access settings could not read the Pi config: "
     if (value.startsWith(prefix)) {
@@ -37,21 +35,7 @@ fun extensionText(value: String, language: AppLanguage): String {
     return russianExtensionText(value)
 }
 
-fun localizeExtensionSettings(value: JsonElement, language: AppLanguage): JsonElement = when (value) {
-    is JsonArray -> JsonArray(value.map { localizeExtensionSettings(it, language) })
-    is JsonObject -> JsonObject(value.mapValues { (key, item) ->
-        when (key) {
-            "title", "subtitle", "label", "description", "buttonLabel" -> {
-                val text = (item as? JsonPrimitive)?.contentOrNull
-                if (text != null) JsonPrimitive(extensionText(text, language)) else item
-            }
-            "sections", "categories", "settings", "options" -> localizeExtensionSettings(item, language)
-            else -> item
-        }
-    })
-    else -> value
-}
-
+/** Looks up Russian translations for builtin extension labels without altering unrecognized strings. */
 private fun russianExtensionText(value: String): String = when (value) {
     "Web Access" -> "Веб-доступ"
     "Search, source verification, extraction, and provider routing" -> "Поиск, проверка источников, извлечение данных и маршрутизация провайдеров"
@@ -123,7 +107,7 @@ private fun russianExtensionText(value: String): String = when (value) {
     "Subagent result" -> "Результат субагента"
     "Subagent conversation" -> "Диалог с субагентом"
     "Agent types" -> "Типы агентов"
-    "Enable or disable individual agent types. Disabled built-ins get a project stub; disabled custom agents keep their file." -> "Включайте и отключайте отдельные типы агентов. Для отключённых встроенных агентов создаётся заглушка проекта."
+    "Enable or disable individual agent types. Disabled built-ins get a project stub; disabled custom agents keep their file." -> "Включайте и отключайте отдельные типы агентов. Для отключённых встроенных агентов создаётся заглушка проекта; файлы пользовательских агентов сохраняются."
     "Draft a subagent creation request" -> "Создать запрос на добавление субагента"
     "Default search provider" -> "Провайдер поиска по умолчанию"
     "Used whenever a tool call leaves provider on Auto." -> "Используется, если для вызова инструмента выбран режим «Авто»."
