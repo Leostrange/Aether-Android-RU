@@ -18,7 +18,7 @@ class PiExtensionImportTest {
         File(packageRoot, "package-lock.json").writeText("{}", Charsets.UTF_8)
 
         assertEquals(
-            "npm ci --omit=dev --no-audit --no-fund",
+            "npm ci --omit=dev --no-audit --no-fund --prefer-offline --fetch-retries=4 --fetch-retry-factor=2 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=20000",
             npmInstallPlanForPackage(packageRoot)?.command,
         )
     }
@@ -29,7 +29,7 @@ class PiExtensionImportTest {
         writeManifest(packageRoot, """{"optionalDependencies":{"demo":"1.0.0"}}""")
 
         assertEquals(
-            "npm install --omit=dev --no-audit --no-fund",
+            "npm install --omit=dev --no-audit --no-fund --prefer-offline --fetch-retries=4 --fetch-retry-factor=2 --fetch-retry-mintimeout=1000 --fetch-retry-maxtimeout=20000",
             npmInstallPlanForPackage(packageRoot)?.command,
         )
     }

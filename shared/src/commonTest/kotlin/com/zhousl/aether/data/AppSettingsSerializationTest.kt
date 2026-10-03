@@ -5,6 +5,14 @@ import kotlin.test.assertEquals
 
 class AppSettingsSerializationTest {
     @Test
+    fun russianLanguageRoundTripsAndMatchesRegionalTags() {
+        val settings = AppSettings(language = AppLanguage.Russian)
+        assertEquals(AppLanguage.Russian, parseAppSettings(serializeAppSettings(settings)).language)
+        assertEquals(AppLanguage.Russian, appLanguageForTag("ru-RU"))
+        assertEquals(AppLanguage.Russian, appLanguageForTag("RU"))
+        assertEquals(AppLanguage.Russian, AppLanguage.fromStorage("ru"))
+    }
+    @Test
     fun completeSettingsRoundTrip() {
         val settings = AppSettings(
             piProviderId = "anthropic",

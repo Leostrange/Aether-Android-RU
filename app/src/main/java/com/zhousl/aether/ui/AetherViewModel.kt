@@ -3828,7 +3828,7 @@ class AetherViewModel(
         }
 
         "app.notify" -> {
-            emitTransientMessage(UiText.Raw(args.optString("message")))
+            emitTransientMessage(UiText.Raw(extensionText(args.optString("message"), _uiState.value.settings.language)))
             JSONObject().put("notified", true)
         }
 

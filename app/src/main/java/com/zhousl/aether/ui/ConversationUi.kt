@@ -2998,7 +2998,7 @@ private fun ConversationComposerBar(
                                     }
                                     extensionUiController?.snapshot?.composerMenuItems.orEmpty().forEach { item ->
                                         ComposerPlusMenuRow(
-                                            title = item.title,
+                                            title = extensionComposerMenuTitle(item.localId, item.title, LocalAetherLanguage.current),
                                             icon = Icons.Rounded.Extension,
                                             selected = item.selected,
                                             iconTint = AetherPrimary,

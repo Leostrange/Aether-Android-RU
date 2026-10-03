@@ -4,6 +4,124 @@ import Foundation
 import SwiftUI
 import UIKit
 
+private let nativeSettingsRussianTranslations: [String: String] = [
+    "API key": "API-ключ",
+    "About": "О приложении",
+    "Account authorized.": "Аккаунт авторизован.",
+    "Add": "Добавить",
+    "Add Provider": "Добавить поставщика",
+    "Add Skill": "Добавить навык",
+    "Advanced settings": "Расширенные настройки",
+    "Agent Skills": "Навыки агента",
+    "Allowed tools": "Разрешенные инструменты",
+    "Any": "Любой",
+    "Authentication": "Аутентификация",
+    "Author": "Автор",
+    "Automatic": "Автоматический",
+    "Average turn": "Средний оборот",
+    "Back": "Назад",
+    "Base URL": "База URL",
+    "Browser login": "Вход в браузер",
+    "Cancel": "Отмена",
+    "Choose Folder": "Выберите папку",
+    "Choose Zip": "Выбрать ZIP-архив",
+    "Close": "Закрыть",
+    "Compatibility": "Совместимость",
+    "Compatibility mode": "Режим совместимости",
+    "Configure credentials": "Настройка учетных данных",
+    "Connect your subscription account to continue.": "Подключите свою учетную запись подписки, чтобы продолжить.",
+    "Connection": "Связь",
+    "Continue": "Продолжать",
+    "Copy": "Копировать",
+    "Custom instructions": "Пользовательские инструкции",
+    "Dark": "Тёмная",
+    "Default Models": "Модели по умолчанию",
+    "Delete": "Удалить",
+    "Dependencies": "Зависимости",
+    "Developer": "Разработчик",
+    "Developer message fallbacks": "Резервные сообщения разработчика",
+    "Device code login": "Вход по коду устройства",
+    "Disconnect": "Отключить",
+    "Discover": "Обнаружить",
+    "Done": "Готово",
+    "Downloads": "Загрузки",
+    "Edit": "Изменить",
+    "Edit Provider": "Изменить поставщика",
+    "Enabled": "Включено",
+    "Environment": "Среда",
+    "Environment variables": "Переменные среды",
+    "Export": "Экспорт",
+    "Export app data": "Экспортировать данные приложения",
+    "Export logs": "Экспорт журналов",
+    "Extensions": "Расширения",
+    "Failed": "Неуспешный",
+    "Fetch models": "Получить модели",
+    "Files": "Файлы Alpine",
+    "General": "Основные",
+    "General Settings": "Общие настройки",
+    "Import app data": "Импортировать данные приложения",
+    "Initialize": "Инициализировать",
+    "Input": "Вход",
+    "Install": "Установить",
+    "Install from URL": "Установить из URL",
+    "Installed": "Установлено",
+    "Installing...": "Установка...",
+    "Keep tasks running in background": "Запускайте задачи в фоновом режиме",
+    "Language": "Язык",
+    "Largest turn": "Самый большой ход",
+    "License": "Лицензия",
+    "Light": "Светлая",
+    "Model Providers": "Поставщики моделей",
+    "Models": "Модели",
+    "Multitasking": "Многозадачность",
+    "Name": "Имя",
+    "Open": "Открыть",
+    "Output": "Выход",
+    "Overview": "Обзор",
+    "Path": "Путь",
+    "Peak day": "Пиковый день",
+    "Personalization": "Персонализация",
+    "Privacy": "Конфиденциальность",
+    "Privacy Policy": "Политика конфиденциальности",
+    "Provider": "Поставщик",
+    "Provider ID": "Идентификатор поставщика",
+    "Provider ID is required.": "Требуется идентификатор поставщика.",
+    "Published": "Опубликовано",
+    "Ready": "Готово",
+    "Reasoning": "Рассуждение",
+    "Recent 7 days": "Последние 7 дней",
+    "Reconnect": "Восстановить соединение",
+    "Recorded turns": "Записанные ходы",
+    "Refresh": "Обновить",
+    "Reliability": "Надежность",
+    "Remove": "Удалить",
+    "Repository": "Репозиторий",
+    "Reset": "Сбросить",
+    "Retry": "Повторить попытку",
+    "Runtime": "Среда выполнения",
+    "Save": "Сохранить",
+    "Search providers": "Поиск поставщиков",
+    "Sessions": "Сессии",
+    "Settings": "Настройки",
+    "Setup required": "Требуется настройка",
+    "Size": "Размер",
+    "Source": "Источник",
+    "Subscription": "Подписка",
+    "System": "Системная",
+    "Terminal": "Терминал",
+    "Theme": "Тема",
+    "This provider ID is already in use.": "Этот идентификатор поставщика уже используется.",
+    "Token mix": "Микс токенов",
+    "Total tokens": "Всего токенов",
+    "Unavailable": "Недоступно",
+    "Update": "Обновить",
+    "Use lowercase letters, numbers, and underscores only.": "Используйте только строчные буквы, цифры и символы подчеркивания.",
+    "Value": "Значение",
+    "Version": "Версия",
+    "Website": "Веб-сайт",
+    "Workspace": "Рабочая область",
+]
+
 private let nativeSettingsPersianTranslations: [String: String] = [
     "API key": "کلید API",
     "About": "درباره",
@@ -257,6 +375,7 @@ final class NativeSettingsModel: NSObject, ObservableObject, @preconcurrency Ios
         switch language {
         case "zh-CN": chinese
         case "fa": persian ?? nativeSettingsPersianTranslations[english] ?? english
+        case "ru": nativeSettingsRussianTranslations[english] ?? english
         default: english
         }
     }
@@ -440,6 +559,7 @@ struct NativeSettingsView: View {
         switch value {
         case "zh-CN": "简体中文"
         case "fa": "فارسی"
+        case "ru": "Русский"
         default: "English"
         }
     }
@@ -463,6 +583,7 @@ private struct NativeGeneralSettingsView: View {
                     Text("English").tag("en")
                     Text("简体中文").tag("zh-CN")
                     Text("فارسی").tag("fa")
+                    Text("Русский").tag("ru")
                 }
                 .accessibilityLabel("\(languageLabel), Language")
             } header: {
@@ -496,7 +617,7 @@ private struct NativeGeneralSettingsView: View {
     }
 
     private var languageLabel: String {
-        switch model.language { case "zh-CN": "简体中文"; case "fa": "فارسی"; default: "English" }
+        switch model.language { case "zh-CN": "简体中文"; case "fa": "فارسی"; case "ru": "Русский"; default: "English" }
     }
 
     private var themeLabel: String {
