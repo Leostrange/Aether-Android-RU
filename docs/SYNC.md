@@ -20,7 +20,7 @@
 - Русские ресурсы: `shared/src/commonMain/composeResources/values-ru/`.
 - Язык `Russian` в общих настройках и реализации Android.
 - `ru` в `app/src/main/res/xml/locales_config.xml`.
-- `android:windowSoftInputMode="adjustNothing"` в AndroidManifest и корректное отображение чата с клавиатурой на устройстве.
+- `adjustResize` в AndroidManifest для API ≤ 29 и выбор `adjustNothing` в MainActivity для API ≥ 30; корректное отображение чата с клавиатурой проверяйте на обеих группах устройств.
 - Переводы нативных Android-настроек и расширений.
 - Новые строки оригинала: добавляйте их переводы по мере появления.
 
