@@ -61,6 +61,7 @@ enum class AppLanguage(
     );
 
     companion object {
+        /** Restores a supported interface language, including Russian, or uses the platform default. */
         fun fromStorage(
             value: String?,
             defaultValue: AppLanguage = defaultAppLanguage(),

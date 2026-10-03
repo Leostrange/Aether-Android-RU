@@ -110,6 +110,7 @@ val VazirmatnFontFamily = FontFamily(
     Font(R.font.vazirmatn_bold, FontWeight.Bold)
 )
 
+/** Returns typography appropriate to the selected interface language, keeping locale-specific font choices consistent. */
 private fun getAetherTypography(fontFamily: FontFamily) = Typography(
     headlineLarge = TextStyle(
         fontFamily = fontFamily,
