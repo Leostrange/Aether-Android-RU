@@ -17,6 +17,7 @@ actual fun platformUptimeMillis(): Long = try {
 
 actual fun platformRandomUuid(): String = UUID.randomUUID().toString()
 
+/** Reads the Android device language tag used to select the initial interface language. */
 actual fun platformLanguageTag(): String = Locale.getDefault().toLanguageTag()
 
 /** Chooses the initial Android agent prompt from the device locale, including Russian devices. */

@@ -3209,6 +3209,7 @@ private fun AetherExtensionControlRow(
                     .firstOrNull { it.optString("value") == selected }
                     ?.optString("label")
                     .orEmpty()
+                    .let { localizedExtensionText(it) }
                 SelectionDropdownField(
                     label = label,
                     supportingText = description,

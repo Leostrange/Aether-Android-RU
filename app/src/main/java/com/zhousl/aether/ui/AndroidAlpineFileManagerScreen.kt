@@ -123,6 +123,7 @@ internal fun AndroidAlpineFileManagerScreen(
     var imagePreview by remember { mutableStateOf<ByteArray?>(null) }
     var pendingDownload by remember { mutableStateOf<AndroidAlpineFileEntry?>(null) }
 
+    /** Reloads entries for the active directory and updates the loading state. */
     fun refresh() {
         val requestedPath = path
         loading = true
@@ -134,6 +135,7 @@ internal fun AndroidAlpineFileManagerScreen(
         }
     }
 
+    /** Imports selected Android documents into Alpine without translating their filenames. */
     fun importDocuments(uris: List<Uri>, folders: Boolean) {
         if (uris.isEmpty()) return
         scope.launch {
@@ -188,6 +190,7 @@ internal fun AndroidAlpineFileManagerScreen(
         },
     )
 
+    /** Opens the selected file or directory using the appropriate Android preview. */
     fun open(entry: AndroidAlpineFileEntry) {
         selected = null
         if (entry.isDirectory) {
@@ -209,6 +212,7 @@ internal fun AndroidAlpineFileManagerScreen(
         }
     }
 
+    /** Closes a preview or moves to the parent directory before leaving the file manager. */
     fun navigateBack(): Boolean {
         if (editorFile != null) {
             editorFile = null
