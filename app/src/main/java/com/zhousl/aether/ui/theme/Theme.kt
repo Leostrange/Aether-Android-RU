@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.sp
 import com.zhousl.aether.R
 import com.zhousl.aether.data.AppLanguage
 import com.zhousl.aether.data.AppThemeMode
+import com.zhousl.aether.ui.LocalAetherLanguage
 import com.zhousl.aether.platform.LocalReduceMotion
 import com.zhousl.aether.platform.rememberPlatformAccessibilityPreferences
 
@@ -168,6 +169,7 @@ private fun getAetherTypography(fontFamily: FontFamily) = Typography(
     )
 )
 
+/** Provides Android colors, typography, layout direction, and the selected language to descendant composables. */
 @Composable
 fun AetherTheme(
     themeMode: AppThemeMode = AppThemeMode.System,
@@ -197,6 +199,7 @@ fun AetherTheme(
         getAetherTypography(currentFontFamily)
     }
     CompositionLocalProvider(
+        LocalAetherLanguage provides language,
         LocalLayoutDirection provides layoutDirection,
         LocalReduceMotion provides accessibility.reduceMotion,
     ) {

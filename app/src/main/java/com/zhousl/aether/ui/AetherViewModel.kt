@@ -3691,6 +3691,7 @@ class AetherViewModel(
         }
     }
 
+    /** Dispatches extension host requests and localizes known notification messages using the Android app language. */
     suspend fun handleAetherExtensionHostCall(
         method: String,
         args: JSONObject,
@@ -3828,7 +3829,7 @@ class AetherViewModel(
         }
 
         "app.notify" -> {
-            emitTransientMessage(UiText.Raw(args.optString("message")))
+            emitTransientMessage(UiText.Raw(extensionText(args.optString("message"), _uiState.value.settings.language)))
             JSONObject().put("notified", true)
         }
 
